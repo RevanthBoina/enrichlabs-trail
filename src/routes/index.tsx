@@ -437,48 +437,6 @@ function HowTo() {
             </div>
           </div>
         </div>
-              );
-            })}
-          </div>
-
-          {/* RIGHT — sticky visual that swaps on active */}
-          <div className="hidden md:block">
-            <div className="sticky top-1/2 -translate-y-1/2">
-              <div className="relative aspect-[4/5] rounded-3xl bg-gradient-to-br from-brand/50 via-brand-deep to-background border border-border shadow-glow overflow-hidden">
-                {steps.map((s, i) => (
-                  <img
-                    key={s.n}
-                    src={s.img}
-                    alt={`${s.title} — ${s.tagline}`}
-                    loading="lazy"
-                    className="absolute inset-0 w-full h-full object-cover transition-all duration-[900ms] ease-out"
-                    style={{
-                      opacity: i === active ? 1 : 0,
-                      transform: i === active ? "scale(1)" : "scale(1.06)",
-                    }}
-                  />
-                ))}
-                <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent pointer-events-none" />
-                <div className="absolute top-5 left-5 flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md px-3 py-1.5 text-xs font-semibold border border-white/20">
-                  <span className="w-1.5 h-1.5 rounded-full bg-lime animate-pulse" />
-                  Step {steps[active].n} · {steps[active].title}
-                </div>
-                {/* progress dots */}
-                <div className="absolute bottom-5 left-5 right-5 flex items-center gap-1.5">
-                  {steps.map((_, i) => (
-                    <span
-                      key={i}
-                      className="h-1 rounded-full transition-all duration-700"
-                      style={{
-                        flex: i === active ? 3 : 1,
-                        background: i === active ? "var(--brand-soft)" : "oklch(1 0 0 / 0.2)",
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </section>
