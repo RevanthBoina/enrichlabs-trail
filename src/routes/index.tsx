@@ -730,6 +730,7 @@ function Index() {
       <HowTo />
       <MeetTeam />
       <Testimonials />
+      <Integrations />
       <CTA />
       <Footer />
     </main>
