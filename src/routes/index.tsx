@@ -288,8 +288,50 @@ function Stats() {
   );
 }
 
-/* HOW IT WORKS — scroll-driven parallax reveals like pitch.com */
+/* HOW IT WORKS — sticky scroll motion cloned from pitch.com "Why Pitch" section.
+   Left column: stacked steps; the one closest to viewport center is "active".
+   Right column: a sticky panel whose image cross-fades to the active step. */
 function HowTo() {
+  const itemRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    const els = itemRefs.current.filter(Boolean) as HTMLDivElement[];
+    if (!els.length) return;
+
+    const pick = () => {
+      const mid = window.innerHeight / 2;
+      let best = 0;
+      let bestDist = Infinity;
+      els.forEach((el, i) => {
+        const r = el.getBoundingClientRect();
+        const c = r.top + r.height / 2;
+        const d = Math.abs(c - mid);
+        if (d < bestDist) {
+          bestDist = d;
+          best = i;
+        }
+      });
+      setActive(best);
+    };
+
+    pick();
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        pick();
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", pick);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", pick);
+    };
+  }, []);
+
   return (
     <section className="py-28 md:py-32 bg-background">
       <div className="mx-auto max-w-7xl px-6">
@@ -305,28 +347,90 @@ function HowTo() {
           </div>
         </Reveal>
 
-        <div className="mt-24 space-y-28 md:space-y-40">
-          {steps.map((s, i) => (
-            <div key={s.n} className={`grid md:grid-cols-2 gap-10 md:gap-16 items-center ${i % 2 ? "md:[&>*:first-child]:order-2" : ""}`}>
-              <Reveal delay={0}>
-                <div>
-                  <span className="text-sm text-muted-foreground font-mono">({s.n})</span>
-                  <h3 className="mt-3 text-6xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.9]">{s.title}</h3>
-                  <p className="mt-6 text-brand-soft font-semibold text-lg md:text-xl">{s.tagline}</p>
-                  <p className="mt-4 text-muted-foreground leading-relaxed max-w-md">{s.body}</p>
-                </div>
-              </Reveal>
-              <Reveal delay={150}>
-                <div className="relative aspect-[4/3] rounded-3xl bg-gradient-to-br from-brand/50 via-brand-deep to-background border border-border shadow-glow overflow-hidden group">
-                  <img src={s.img} alt={`${s.title} — ${s.tagline}`} loading="lazy" className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1200ms] group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/50 via-transparent to-transparent" />
-                  <div className="absolute top-4 left-4 rounded-full bg-white/10 backdrop-blur-md px-3 py-1 text-xs font-semibold border border-white/20">
-                    Step {s.n}
+        <div className="mt-20 md:mt-28 grid md:grid-cols-2 gap-12 md:gap-20 items-start">
+          {/* LEFT — scrolling step list */}
+          <div className="space-y-[60vh] md:space-y-[55vh] pt-[20vh] pb-[20vh]">
+            {steps.map((s, i) => {
+              const isActive = i === active;
+              return (
+                <div
+                  key={s.n}
+                  ref={(el) => { itemRefs.current[i] = el; }}
+                  className="transition-all duration-700 ease-out"
+                  style={{
+                    opacity: isActive ? 1 : 0.32,
+                    filter: isActive ? "none" : "blur(0.5px)",
+                    transform: isActive ? "translateY(0)" : "translateY(4px)",
+                  }}
+                >
+                  <div className="flex items-start gap-5">
+                    <span
+                      className="mt-4 inline-block rounded-full transition-all duration-700"
+                      style={{
+                        width: isActive ? 14 : 10,
+                        height: isActive ? 14 : 10,
+                        background: isActive ? "var(--brand)" : "var(--muted-foreground)",
+                        boxShadow: isActive ? "0 0 0 6px oklch(0.65 0.22 295 / 0.18)" : "none",
+                      }}
+                    />
+                    <div>
+                      <span className="text-xs text-muted-foreground font-mono tracking-widest">({s.n})</span>
+                      <h3
+                        className="mt-2 font-black tracking-tight leading-[0.95] transition-colors duration-700"
+                        style={{
+                          fontSize: "clamp(2.25rem, 5vw, 3.75rem)",
+                          color: isActive ? "var(--brand-soft)" : "var(--foreground)",
+                        }}
+                      >
+                        {s.title}
+                      </h3>
+                      <p className="mt-4 text-brand-soft/90 font-semibold text-base md:text-lg">{s.tagline}</p>
+                      <p className="mt-3 text-muted-foreground leading-relaxed max-w-md text-[0.98rem]">{s.body}</p>
+                    </div>
                   </div>
                 </div>
-              </Reveal>
+              );
+            })}
+          </div>
+
+          {/* RIGHT — sticky visual that swaps on active */}
+          <div className="hidden md:block">
+            <div className="sticky top-1/2 -translate-y-1/2">
+              <div className="relative aspect-[4/5] rounded-3xl bg-gradient-to-br from-brand/50 via-brand-deep to-background border border-border shadow-glow overflow-hidden">
+                {steps.map((s, i) => (
+                  <img
+                    key={s.n}
+                    src={s.img}
+                    alt={`${s.title} — ${s.tagline}`}
+                    loading="lazy"
+                    className="absolute inset-0 w-full h-full object-cover transition-all duration-[900ms] ease-out"
+                    style={{
+                      opacity: i === active ? 1 : 0,
+                      transform: i === active ? "scale(1)" : "scale(1.06)",
+                    }}
+                  />
+                ))}
+                <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent pointer-events-none" />
+                <div className="absolute top-5 left-5 flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md px-3 py-1.5 text-xs font-semibold border border-white/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-lime animate-pulse" />
+                  Step {steps[active].n} · {steps[active].title}
+                </div>
+                {/* progress dots */}
+                <div className="absolute bottom-5 left-5 right-5 flex items-center gap-1.5">
+                  {steps.map((_, i) => (
+                    <span
+                      key={i}
+                      className="h-1 rounded-full transition-all duration-700"
+                      style={{
+                        flex: i === active ? 3 : 1,
+                        background: i === active ? "var(--brand-soft)" : "oklch(1 0 0 / 0.2)",
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
-          ))}
+          </div>
         </div>
       </div>
     </section>
