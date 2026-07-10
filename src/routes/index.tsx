@@ -437,7 +437,6 @@ function HowTo() {
             </div>
           </div>
         </div>
-        </div>
       </div>
     </section>
   );
