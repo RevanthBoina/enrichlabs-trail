@@ -529,6 +529,126 @@ function Testimonials() {
   );
 }
 
+/* Integrations — pitch.com "Weave X into your workflow" clone.
+   Center brand pill (Enrich mark) with integration chips scattered on a soft gradient.
+   Chips gently float and drift on scroll for depth. */
+function Integrations() {
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+  const [p, setP] = useState(0); // -1 .. 1 based on section center vs viewport center
+
+  useEffect(() => {
+    let raf = 0;
+    const update = () => {
+      const el = wrapRef.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      const mid = r.top + r.height / 2;
+      const vhMid = window.innerHeight / 2;
+      const raw = (vhMid - mid) / (window.innerHeight);
+      setP(Math.max(-1, Math.min(1, raw)));
+    };
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => { raf = 0; update(); });
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", update);
+    };
+  }, []);
+
+  // Integration chips: label, brand color (bg), letter/initial
+  const chips = [
+    { label: "Slack", bg: "#fff", fg: "#611f69", letter: "#", x: "10%", y: "62%", size: 64, depth: 40, delay: 0 },
+    { label: "Notion", bg: "#fff", fg: "#111", letter: "N", x: "22%", y: "34%", size: 56, depth: 60, delay: 0.6 },
+    { label: "HubSpot", bg: "#fff", fg: "#ff7a59", letter: "H", x: "78%", y: "38%", size: 60, depth: -50, delay: 1.1 },
+    { label: "Figma", bg: "#fff", fg: "#a259ff", letter: "F", x: "90%", y: "68%", size: 68, depth: -70, delay: 0.3 },
+    { label: "Linear", bg: "#fff", fg: "#5e6ad2", letter: "L", x: "6%", y: "22%", size: 48, depth: 30, delay: 0.9 },
+    { label: "Zapier", bg: "#fff", fg: "#ff4a00", letter: "Z", x: "92%", y: "18%", size: 52, depth: -30, delay: 1.4 },
+    { label: "Salesforce", bg: "#fff", fg: "#00a1e0", letter: "S", x: "72%", y: "82%", size: 56, depth: -20, delay: 1.8 },
+    { label: "Google Ads", bg: "#fff", fg: "#4285f4", letter: "G", x: "16%", y: "84%", size: 52, depth: 20, delay: 2.2 },
+  ];
+
+  return (
+    <section
+      ref={wrapRef}
+      className="relative overflow-hidden py-28 md:py-36"
+      style={{
+        background:
+          "radial-gradient(120% 80% at 50% 40%, oklch(0.9 0.06 300) 0%, oklch(0.94 0.03 300) 55%, oklch(0.97 0.01 285) 100%)",
+      }}
+    >
+      <div className="relative mx-auto max-w-4xl px-6 text-center text-[oklch(0.2_0.05_285)]">
+        <Reveal>
+          <div className="inline-flex items-center gap-3 rounded-md px-4 py-2 text-sm text-[oklch(0.25_0.05_285)]" style={{ background: "transparent", boxShadow: "inset 0 0 0 1px oklch(0.55 0.22 295 / 0.35)" }}>
+            <span>API coming soon</span>
+            <a href="#" className="inline-flex items-center gap-1 font-bold text-[oklch(0.35_0.2_290)]">
+              Register your interest <ArrowRight className="w-3.5 h-3.5" />
+            </a>
+          </div>
+        </Reveal>
+        <Reveal delay={80}>
+          <h2 className="mt-10 font-black tracking-tight leading-[1.02] text-balance text-4xl sm:text-5xl md:text-6xl">
+            Weave Enrich into your<br className="hidden sm:block" /> existing workflow
+          </h2>
+        </Reveal>
+      </div>
+
+      {/* Chip field */}
+      <div className="relative mx-auto max-w-6xl mt-16 md:mt-20 h-[380px] md:h-[440px] px-6">
+        {chips.map((c) => (
+          <div
+            key={c.label}
+            className="absolute -translate-x-1/2 -translate-y-1/2 animate-float"
+            style={{
+              left: c.x,
+              top: c.y,
+              animationDelay: `${c.delay}s`,
+              transform: `translate(-50%, calc(-50% + ${p * c.depth}px))`,
+              transition: "transform 200ms linear",
+            }}
+            aria-label={c.label}
+          >
+            <div
+              className="grid place-items-center rounded-full shadow-[0_20px_40px_-15px_rgba(50,20,80,0.35)] ring-1 ring-black/5"
+              style={{
+                width: c.size,
+                height: c.size,
+                background: c.bg,
+                color: c.fg,
+                fontWeight: 900,
+                fontSize: c.size * 0.42,
+              }}
+            >
+              {c.letter}
+            </div>
+          </div>
+        ))}
+
+        {/* Center Enrich brand pill */}
+        <div
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+          style={{ transform: `translate(-50%, calc(-50% + ${p * -20}px))`, transition: "transform 200ms linear" }}
+        >
+          <div className="relative rounded-full bg-gradient-brand px-10 md:px-14 py-5 md:py-6 shadow-glow flex items-center gap-4">
+            <img src={enrichMark.url} alt="Enrich mark" className="w-9 h-9 md:w-11 md:h-11 rounded-md object-cover" />
+            <span className="text-white text-2xl md:text-3xl font-black tracking-tight">Enrich</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="relative text-center mt-8">
+        <a href="#" className="inline-flex items-center gap-1.5 font-bold text-[oklch(0.2_0.05_285)]">
+          Explore integrations <ArrowRight className="w-4 h-4" />
+        </a>
+      </div>
+    </section>
+  );
+}
+
 function CTA() {
   return (
     <section className="py-32 bg-gradient-hero">
