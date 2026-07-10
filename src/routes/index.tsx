@@ -6,47 +6,47 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const templateThumbs = [
-  { title: "Business Model Canvas", tone: "bg-[oklch(0.85_0.08_80)] text-[oklch(0.2_0.1_60)]" },
-  { title: "The Editorial", tone: "bg-[oklch(0.25_0.1_260)] text-white" },
-  { title: "Short Film Festival", tone: "bg-[oklch(0.3_0.15_20)] text-[oklch(0.9_0.1_80)]" },
-  { title: "Creative Brief", tone: "bg-[oklch(0.55_0.2_25)] text-white" },
-  { title: "Sales Pitch", tone: "bg-[oklch(0.9_0.05_320)] text-[oklch(0.3_0.1_320)]" },
-  { title: "Marketing Proposal", tone: "bg-[oklch(0.35_0.15_290)] text-[oklch(0.9_0.1_320)]" },
-  { title: "Series B Pitch Deck", tone: "bg-[oklch(0.25_0.05_260)] text-[oklch(0.85_0.1_80)]" },
-  { title: "Newbie Partnership", tone: "bg-[oklch(0.5_0.2_15)] text-white" },
-  { title: "The Bloom Template", tone: "bg-[oklch(0.4_0.15_340)] text-[oklch(0.95_0.05_60)]" },
-  { title: "Strategic Planning", tone: "bg-[oklch(0.75_0.15_80)] text-[oklch(0.25_0.1_260)]" },
-  { title: "Match", tone: "bg-[oklch(0.65_0.2_25)] text-white" },
-  { title: "Onboarding", tone: "bg-[oklch(0.9_0.03_260)] text-[oklch(0.3_0.1_260)]" },
+const agentThumbs = [
+  { title: "Helena — Digital Marketer", tone: "bg-[oklch(0.85_0.08_80)] text-[oklch(0.2_0.1_60)]" },
+  { title: "Sam — SEO / GEO Manager", tone: "bg-[oklch(0.25_0.1_260)] text-white" },
+  { title: "Kai — Social Listening", tone: "bg-[oklch(0.3_0.15_20)] text-[oklch(0.9_0.1_80)]" },
+  { title: "Angela — Email Marketer", tone: "bg-[oklch(0.55_0.2_25)] text-white" },
+  { title: "Content & SEO", tone: "bg-[oklch(0.9_0.05_320)] text-[oklch(0.3_0.1_320)]" },
+  { title: "Ad Management", tone: "bg-[oklch(0.35_0.15_290)] text-[oklch(0.9_0.1_320)]" },
+  { title: "Automated Research", tone: "bg-[oklch(0.25_0.05_260)] text-[oklch(0.85_0.1_80)]" },
+  { title: "Email Campaigns", tone: "bg-[oklch(0.5_0.2_15)] text-white" },
+  { title: "Social Listening", tone: "bg-[oklch(0.4_0.15_340)] text-[oklch(0.95_0.05_60)]" },
+  { title: "Analytics & Reporting", tone: "bg-[oklch(0.75_0.15_80)] text-[oklch(0.25_0.1_260)]" },
+  { title: "Brand & Knowledge", tone: "bg-[oklch(0.65_0.2_25)] text-white" },
+  { title: "Automation Builder", tone: "bg-[oklch(0.9_0.03_260)] text-[oklch(0.3_0.1_260)]" },
 ];
 
-const logos = ["synthesia", "Pentagram", "Kolo", "perplexity", "THRIVE GLOBAL", "CLEVELAND BROWNS", "Linear"];
+const logos = ["Acme Corp", "Shop&Save", "Northwind", "Lumen", "BrightPath", "Vanta Retail", "Kestrel"];
 
 const features = [
-  { title: "Make stunning slides", body: "Your audience sees hundreds of presentations. Use Pitch's powerful editor to stand out with sleek slides enhanced by high-res video, animations, and custom fonts." },
-  { title: "Pitch like a pro", body: "Import customer data, generate personalized decks in bulk, share content in custom deal rooms, and track visitor engagement so you know when to follow up." },
-  { title: "Showcase your brand", body: "When your team is pitching at scale, consistency can fall apart fast. Pitch keeps everyone aligned with shared templates, a brand library, and AI that adapts to your workflow." },
-  { title: "Stay in control", body: "With every team presentation in a single cloud-based workspace, you can easily organize workflows and stay on top of your shared content and collateral." },
+  { title: "Ship campaigns end to end", body: "Your team is buried in briefs and dashboards. Enrich agents research, write, publish, and optimize across every channel — so campaigns actually ship, on time, on brand." },
+  { title: "Grow like a pro", body: "Enrich agents plan keywords, generate content, launch ads, and send emails on autopilot. Personalize at scale, run experiments in bulk, and know exactly what's working." },
+  { title: "Protect your brand", body: "Every agent learns your voice, guidelines, and offers from a central knowledge base. Stay consistent across blogs, ads, email, and social — without micromanaging every asset." },
+  { title: "Stay in control", body: "One workspace for every campaign, agent, and metric. Approve work, edit outputs, and track ROI in real time — with humans in the loop wherever it matters." },
 ];
 
 const steps = [
-  { n: "01", title: "Create", tagline: "Intuitive slide creation", body: "Start from a blank canvas or template — or use AI to generate on-brand slides in seconds. Keep full design control over every detail." },
-  { n: "02", title: "Collaborate", tagline: "Remove team bottlenecks", body: "The best presentations are made together. Live co-editing, slide assignments, and comments mean your team moves faster and smarter." },
-  { n: "03", title: "Deliver", tagline: "Present unforgettable slides", body: "Grab attention with interactive embeds and animations, share via live links and custom deal rooms, and track engagement." },
+  { n: "01", title: "Gather", tagline: "Continuous research", body: "Kai listens across social, search, and communities. Sam tracks keywords and competitors. Your agents surface opportunities before your team even opens a dashboard." },
+  { n: "02", title: "Execute", tagline: "Autonomous execution", body: "Helena writes blogs, ads, and landing pages. Angela drafts and sends email campaigns. Everything ships to your CMS, ad accounts, and ESP — with your review when you want it." },
+  { n: "03", title: "Analyze", tagline: "Insights that loop back", body: "Live dashboards track ROI, traffic, and revenue across channels. Results feed straight back into the next brief, so every campaign compounds on the last." },
 ];
 
 const testimonials = [
-  { quote: "Our work is highly visual and motion-driven. We know our presentations will always look polished and play flawlessly.", name: "Tara Dabir", role: "Director of New Business Development", company: "Pentagram" },
-  { quote: "I'm a very happy customer and love the fact that Pitch continuously gets better. It's really hard to imagine going back to Keynote or Google Slides!", name: "Edwin Khodabakchian", role: "CEO", company: "Perplexity" },
-  { quote: "Everyone kind of realized super quickly how much better everything became once we switched to Pitch.", name: "Lucas Löf", role: "UX Lead", company: "Kolo" },
-  { quote: "If more than one person on the team is producing decks, the consistency problem just gets worse over time. Easily solved with Pitch.", name: "Jelle van Schaick", role: "Head of Marketing", company: "Linear" },
-  { quote: "This is what product delight looks like.", name: "Vlad Zely", role: "Head of Product Design", company: "Synthesia" },
+  { quote: "Enrich has doubled our content output without expanding the team. It's like hiring a full marketing pod overnight.", name: "Jane Doe", role: "Marketing Director", company: "Acme Corp" },
+  { quote: "Our campaigns run themselves. Enrich feels like our entire marketing department — at a fraction of the cost.", name: "John Smith", role: "CEO", company: "Shop&Save" },
+  { quote: "Helena writes better first drafts than most agencies we've hired. We just review, tweak, and ship.", name: "Priya Natarajan", role: "Head of Growth", company: "Northwind" },
+  { quote: "The moment we plugged in our brand voice, every output started sounding like us. That was the unlock.", name: "Marco Álvarez", role: "VP Marketing", company: "Lumen" },
+  { quote: "This is what an AI marketing team should feel like.", name: "Sara Chen", role: "Founder", company: "BrightPath" },
 ];
 
 function Nav() {
   const [open, setOpen] = useState(false);
-  const items = ["Product", "Use Cases", "Templates", "Resources", "Pricing"];
+  const items = ["Agents", "Solutions", "Resources", "Pricing", "Blog"];
   return (
     <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/50 border-b border-border">
       <div className="mx-auto max-w-7xl px-6 h-16 flex items-center justify-between gap-4">
@@ -54,7 +54,7 @@ function Nav() {
           <span className="grid place-items-center w-7 h-7 rounded-md bg-gradient-brand shadow-glow">
             <Sparkles className="w-4 h-4 text-white" />
           </span>
-          Pitch
+          Enrich Labs
         </a>
         <nav className="hidden md:flex items-center gap-1 text-sm">
           {items.map((i) => (
@@ -63,10 +63,10 @@ function Nav() {
         </nav>
         <div className="flex items-center gap-2">
           <a href="#" className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-white/10 hover:bg-white/15 px-4 py-2 text-sm font-medium transition">
-            Log in <ArrowRight className="w-3.5 h-3.5" />
+            Login <ArrowRight className="w-3.5 h-3.5" />
           </a>
           <a href="#" className="inline-flex items-center rounded-full bg-lime px-4 py-2 text-sm font-semibold text-[oklch(0.2_0.05_285)] hover:brightness-95 transition">
-            Sign up
+            Get Started
           </a>
           <button className="md:hidden p-2" onClick={() => setOpen(!open)}><Menu className="w-5 h-5" /></button>
         </div>
@@ -84,8 +84,8 @@ function AnnouncementBar() {
   return (
     <div className="bg-brand-soft text-[oklch(0.2_0.05_285)] text-sm">
       <div className="mx-auto max-w-7xl px-6 py-2.5 flex items-center justify-center gap-2 text-center">
-        <span className="font-semibold">Introducing Pitch Agent:</span>
-        <span className="hidden sm:inline">Generate on-brand presentations in seconds with AI.</span>
+        <span className="font-semibold">Introducing Helena 2.0:</span>
+        <span className="hidden sm:inline">A smarter AI marketer that writes, publishes, and optimizes autonomously.</span>
         <a href="#" className="inline-flex items-center gap-1 font-semibold underline underline-offset-2">
           See what's new <ArrowRight className="w-3.5 h-3.5" />
         </a>
@@ -97,7 +97,6 @@ function AnnouncementBar() {
 function Hero() {
   return (
     <section className="relative overflow-hidden bg-gradient-hero">
-      {/* floating template thumbs behind */}
       <div className="absolute inset-0 opacity-40 pointer-events-none">
         <div className="absolute -top-8 -left-10 w-64 h-40 rounded-2xl bg-[oklch(0.85_0.08_80)] rotate-[-8deg]" />
         <div className="absolute top-24 right-8 w-72 h-44 rounded-2xl bg-[oklch(0.3_0.15_20)] rotate-[6deg]" />
@@ -108,14 +107,14 @@ function Hero() {
 
       <div className="relative mx-auto max-w-6xl px-6 pt-20 pb-32 text-center">
         <h1 className="font-black tracking-tight text-balance text-6xl sm:text-7xl md:text-8xl lg:text-9xl leading-[0.9]">
-          Create slides<br />that win.
+          AI marketers<br />that ship.
         </h1>
 
         <div className="mt-16 mx-auto max-w-2xl">
           <div className="rounded-2xl bg-white p-4 shadow-glow text-left">
             <input
               type="text"
-              defaultValue="Generate a sales presentation for a digital marketplace"
+              defaultValue="Launch a full-funnel campaign for our new product line"
               className="w-full bg-transparent text-[oklch(0.3_0.05_285)] placeholder:text-[oklch(0.6_0.03_285)] outline-none text-base py-2"
             />
             <div className="mt-6 flex items-center justify-between">
@@ -124,21 +123,20 @@ function Hero() {
                   <Plus className="w-4 h-4" />
                 </button>
                 <button className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-[oklch(0.4_0.1_290)] hover:bg-[oklch(0.95_0.05_290)]">
-                  <Shuffle className="w-4 h-4" /> Prompts
+                  <Shuffle className="w-4 h-4" /> Briefs
                 </button>
               </div>
               <button className="inline-flex items-center gap-2 rounded-full bg-gradient-brand px-4 py-2 text-sm font-semibold text-white">
-                Generate <ArrowUp className="w-4 h-4" />
+                Launch <ArrowUp className="w-4 h-4" />
               </button>
             </div>
           </div>
           <p className="mt-8 text-lg text-foreground/85">
-            From prompt to presentation, <span className="font-semibold">4M+ teams</span> create and deliver winning slides together in Pitch.
+            From brief to launch, <span className="font-semibold">1,000+ companies</span> let Enrich agents run their marketing 24/7.
           </p>
         </div>
       </div>
 
-      {/* logos */}
       <div className="relative border-t border-white/10">
         <div className="mx-auto max-w-7xl px-6 py-10 flex flex-wrap items-center justify-center gap-x-12 gap-y-6 opacity-80">
           {logos.map((l) => (
@@ -151,17 +149,17 @@ function Hero() {
 }
 
 function TemplatesMarquee() {
-  const row1 = templateThumbs.slice(0, 6);
-  const row2 = templateThumbs.slice(6, 12);
+  const row1 = agentThumbs.slice(0, 6);
+  const row2 = agentThumbs.slice(6, 12);
   return (
     <section className="py-24 bg-background">
       <div className="mx-auto max-w-7xl px-6 mb-12 text-center">
-        <p className="text-xs font-bold tracking-[0.2em] text-brand-soft">WHY PITCH</p>
+        <p className="text-xs font-bold tracking-[0.2em] text-brand-soft">WHY ENRICH</p>
         <h2 className="mt-3 text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-balance">
-          Pitch is your presentation workspace
+          A complete marketing operating system
         </h2>
         <p className="mt-5 text-lg text-muted-foreground max-w-2xl mx-auto">
-          From first slide to final delivery, Pitch is where teams create presentations that actually land.
+          Everything your team needs to plan, execute, and analyze campaigns — powered by AI specialists that actually do the work.
         </p>
       </div>
 
@@ -170,7 +168,7 @@ function TemplatesMarquee() {
           <div key={i} className="flex gap-6 px-6" style={{ transform: i === 1 ? "translateX(-40px)" : undefined }}>
             {row.concat(row).map((t, idx) => (
               <div key={idx} className={`shrink-0 w-[280px] sm:w-[340px] aspect-video rounded-2xl ${t.tone} p-6 flex flex-col justify-between shadow-lg`}>
-                <div className="text-xs font-bold tracking-widest opacity-70">TEMPLATE</div>
+                <div className="text-xs font-bold tracking-widest opacity-70">AGENT</div>
                 <div className="text-2xl font-black tracking-tight">{t.title}</div>
               </div>
             ))}
@@ -209,16 +207,16 @@ function Features() {
 
 function Stats() {
   const stats = [
-    { value: "4M+", label: "Professional teams choose Pitch to build, deliver, and win." },
-    { value: "150+", label: "Templates designed by experts to get you started." },
-    { value: "5H+", label: "On average, users save over 5 hours every week." },
+    { value: "1,000+", label: "Companies trust Enrich agents to run and grow their marketing." },
+    { value: "24/7", label: "Autonomous execution across content, ads, email, and social." },
+    { value: "10H+", label: "On average, marketing teams save over 10 hours every week." },
   ];
   return (
     <section className="py-24 bg-gradient-hero">
       <div className="mx-auto max-w-6xl px-6">
         <p className="text-xs font-bold tracking-[0.2em] text-brand-soft">THE PAYOFF</p>
         <h2 className="mt-3 text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-balance max-w-4xl">
-          Presentations are more than an asset. With Pitch, they're your new competitive advantage.
+          Marketing is more than a cost center. With Enrich, it's your compounding growth engine.
         </h2>
         <div className="mt-16 grid sm:grid-cols-3 gap-8">
           {stats.map((s) => (
@@ -238,12 +236,12 @@ function HowTo() {
     <section className="py-24 bg-background">
       <div className="mx-auto max-w-7xl px-6">
         <div className="max-w-3xl">
-          <p className="text-xs font-bold tracking-[0.2em] text-brand-soft">HOW TO</p>
+          <p className="text-xs font-bold tracking-[0.2em] text-brand-soft">HOW IT WORKS</p>
           <h2 className="mt-3 text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-balance">
-            From first draft to closed deal, and beyond
+            Your autonomous marketing workflow
           </h2>
           <p className="mt-5 text-lg text-muted-foreground">
-            The best presentations aren't made by just one person. In Pitch, your whole team works together to create sleek, effective slides.
+            Enrich specialists work together in real time — research feeds content, content fuels campaigns, and insights inform the next brief.
           </p>
         </div>
 
@@ -276,7 +274,7 @@ function Testimonials() {
     <section className="py-24 bg-background border-t border-border">
       <div className="mx-auto max-w-7xl px-6">
         <h2 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-balance max-w-3xl">
-          Loved by the world's most creative teams.
+          Loved by marketing teams that mean growth.
         </h2>
         <div className="mt-16 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {testimonials.map((t, i) => (
@@ -302,17 +300,17 @@ function CTA() {
     <section className="py-32 bg-gradient-hero">
       <div className="mx-auto max-w-4xl px-6 text-center">
         <h2 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight text-balance">
-          Start winning with better slides.
+          Meet your new marketing team.
         </h2>
         <p className="mt-6 text-lg text-muted-foreground">
-          Join millions of teams building beautiful, on-brand presentations in Pitch.
+          Join thousands of teams growing faster with autonomous AI marketers.
         </p>
         <div className="mt-10 flex flex-wrap justify-center gap-3">
           <a href="#" className="inline-flex items-center gap-2 rounded-full bg-lime px-6 py-3 font-semibold text-[oklch(0.2_0.05_285)]">
-            Sign up free <ArrowRight className="w-4 h-4" />
+            Get Started — It's Free <ArrowRight className="w-4 h-4" />
           </a>
           <a href="#" className="inline-flex items-center gap-2 rounded-full bg-white/10 hover:bg-white/15 px-6 py-3 font-semibold transition">
-            Book a demo
+            Book a Demo
           </a>
         </div>
       </div>
@@ -322,10 +320,10 @@ function CTA() {
 
 function Footer() {
   const cols = {
-    Product: ["Features", "Templates", "Pricing", "What's new", "Integrations"],
-    "Use cases": ["Sales", "Marketing", "Startups", "Agencies", "Education"],
-    Resources: ["Blog", "Help center", "Community", "Careers", "Press"],
-    Company: ["About", "Customers", "Partners", "Legal", "Contact"],
+    Agents: ["Helena — Digital Marketer", "Sam — SEO / GEO Manager", "Kai — Social Listening", "Angela — Email Marketer", "All agents"],
+    Solutions: ["Startups & SMBs", "Digital Agencies", "E-commerce Brands", "Global Enterprises", "Marketing Teams"],
+    Resources: ["Blog", "Case Studies", "Help Center", "Docs", "Changelog"],
+    Company: ["About", "Careers", "Press", "Legal", "Contact"],
   };
   return (
     <footer className="bg-background border-t border-border pt-20 pb-10">
@@ -336,9 +334,9 @@ function Footer() {
               <span className="grid place-items-center w-8 h-8 rounded-md bg-gradient-brand">
                 <Sparkles className="w-4 h-4 text-white" />
               </span>
-              Pitch
+              Enrich Labs
             </div>
-            <p className="mt-4 text-sm text-muted-foreground">The presentation workspace for modern teams.</p>
+            <p className="mt-4 text-sm text-muted-foreground">The AI marketing operating system for modern teams.</p>
           </div>
           {Object.entries(cols).map(([title, items]) => (
             <div key={title}>
@@ -352,7 +350,7 @@ function Footer() {
           ))}
         </div>
         <div className="mt-16 pt-8 border-t border-border flex flex-wrap items-center justify-between gap-4 text-sm text-muted-foreground">
-          <div>© {new Date().getFullYear()} Pitch Software GmbH</div>
+          <div>© {new Date().getFullYear()} Enrich Labs, Inc.</div>
           <div className="flex gap-6">
             <a href="#" className="hover:text-foreground">Privacy</a>
             <a href="#" className="hover:text-foreground">Terms</a>
