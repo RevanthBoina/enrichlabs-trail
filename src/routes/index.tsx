@@ -180,10 +180,31 @@ function Hero() {
           </p>
         </div>
 
-        {/* Hero product visual */}
+        {/* Hero product visual — autoplaying loop, muted */}
         <Reveal delay={200} className="mt-16">
-          <div className="relative mx-auto max-w-5xl rounded-3xl border border-white/10 overflow-hidden shadow-glow">
-            <img src={heroDash} alt="Enrich Labs marketing dashboard with AI agents collaborating on campaigns" className="w-full h-auto block" width={1600} height={1000} />
+          <div className="relative mx-auto max-w-5xl rounded-3xl border border-white/10 overflow-hidden shadow-glow bg-black">
+            <video
+              src={heroVideo.url}
+              poster={heroDash}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              aria-label="Enrich Labs AI marketing dashboard in motion"
+              className="w-full h-auto block"
+            />
+            {/* Cover bottom-right watermark from source video */}
+            <div
+              aria-hidden
+              className="absolute bottom-0 right-0 pointer-events-none"
+              style={{
+                width: "9%",
+                height: "12%",
+                background:
+                  "radial-gradient(ellipse at center, oklch(0.08 0.03 285) 55%, oklch(0.08 0.03 285 / 0.85) 78%, transparent 100%)",
+              }}
+            />
           </div>
         </Reveal>
       </div>
