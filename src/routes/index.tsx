@@ -347,9 +347,9 @@ function HowTo() {
           </div>
         </Reveal>
 
-        <div className="mt-20 md:mt-28 grid md:grid-cols-2 gap-12 md:gap-20 items-start">
+        <div className="mt-16 md:mt-24 grid md:grid-cols-2 gap-12 md:gap-20 items-start">
           {/* LEFT — scrolling step list */}
-          <div className="space-y-[60vh] md:space-y-[55vh] pt-[20vh] pb-[20vh]">
+          <div className="space-y-16 md:space-y-[55vh] md:pt-[22vh] md:pb-[22vh]">
             {steps.map((s, i) => {
               const isActive = i === active;
               return (
@@ -358,37 +358,85 @@ function HowTo() {
                   ref={(el) => { itemRefs.current[i] = el; }}
                   className="transition-all duration-700 ease-out"
                   style={{
-                    opacity: isActive ? 1 : 0.32,
-                    filter: isActive ? "none" : "blur(0.5px)",
-                    transform: isActive ? "translateY(0)" : "translateY(4px)",
+                    opacity: isActive ? 1 : 0.4,
                   }}
                 >
-                  <div className="flex items-start gap-5">
+                  {/* Mobile: inline image per step. Desktop: hidden (sticky panel handles visuals). */}
+                  <div className="md:hidden mb-6 relative aspect-[4/3] rounded-2xl overflow-hidden border border-border bg-gradient-to-br from-brand/40 via-brand-deep to-background shadow-glow">
+                    <img src={s.img} alt={`${s.title} — ${s.tagline}`} loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
+                    <div className="absolute top-3 left-3 rounded-full bg-white/10 backdrop-blur-md px-3 py-1 text-xs font-semibold border border-white/20">
+                      Step {s.n} · {s.title}
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-4 md:gap-5">
                     <span
-                      className="mt-4 inline-block rounded-full transition-all duration-700"
+                      className="mt-3 md:mt-4 inline-block rounded-full transition-all duration-700 shrink-0"
                       style={{
-                        width: isActive ? 14 : 10,
-                        height: isActive ? 14 : 10,
+                        width: isActive ? 12 : 8,
+                        height: isActive ? 12 : 8,
                         background: isActive ? "var(--brand)" : "var(--muted-foreground)",
-                        boxShadow: isActive ? "0 0 0 6px oklch(0.65 0.22 295 / 0.18)" : "none",
+                        boxShadow: isActive ? "0 0 0 5px oklch(0.65 0.22 295 / 0.18)" : "none",
                       }}
                     />
-                    <div>
+                    <div className="min-w-0">
                       <span className="text-xs text-muted-foreground font-mono tracking-widest">({s.n})</span>
                       <h3
                         className="mt-2 font-black tracking-tight leading-[0.95] transition-colors duration-700"
                         style={{
-                          fontSize: "clamp(2.25rem, 5vw, 3.75rem)",
+                          fontSize: "clamp(2rem, 5vw, 3.5rem)",
                           color: isActive ? "var(--brand-soft)" : "var(--foreground)",
                         }}
                       >
                         {s.title}
                       </h3>
-                      <p className="mt-4 text-brand-soft/90 font-semibold text-base md:text-lg">{s.tagline}</p>
-                      <p className="mt-3 text-muted-foreground leading-relaxed max-w-md text-[0.98rem]">{s.body}</p>
+                      <p className="mt-3 text-brand-soft/90 font-semibold text-base md:text-lg">{s.tagline}</p>
+                      <p className="mt-2 text-muted-foreground leading-relaxed max-w-md text-[0.95rem] md:text-base">{s.body}</p>
                     </div>
                   </div>
                 </div>
+              );
+            })}
+          </div>
+
+          {/* RIGHT — sticky visual that swaps on active (desktop only) */}
+          <div className="hidden md:block">
+            <div className="sticky top-24">
+              <div className="relative aspect-[4/5] max-h-[75vh] rounded-3xl bg-gradient-to-br from-brand/50 via-brand-deep to-background border border-border shadow-glow overflow-hidden">
+                {steps.map((s, i) => (
+                  <img
+                    key={s.n}
+                    src={s.img}
+                    alt={`${s.title} — ${s.tagline}`}
+                    loading="lazy"
+                    className="absolute inset-0 w-full h-full object-cover transition-all duration-[900ms] ease-out"
+                    style={{
+                      opacity: i === active ? 1 : 0,
+                      transform: i === active ? "scale(1)" : "scale(1.06)",
+                    }}
+                  />
+                ))}
+                <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent pointer-events-none" />
+                <div className="absolute top-5 left-5 flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md px-3 py-1.5 text-xs font-semibold border border-white/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-lime animate-pulse" />
+                  Step {steps[active].n} · {steps[active].title}
+                </div>
+                <div className="absolute bottom-5 left-5 right-5 flex items-center gap-1.5">
+                  {steps.map((_, i) => (
+                    <span
+                      key={i}
+                      className="h-1 rounded-full transition-all duration-700"
+                      style={{
+                        flex: i === active ? 3 : 1,
+                        background: i === active ? "var(--brand-soft)" : "oklch(1 0 0 / 0.2)",
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
               );
             })}
           </div>
