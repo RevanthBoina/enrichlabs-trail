@@ -232,12 +232,12 @@ function AgentsMarquee() {
   return (
     <section className="py-28 md:py-32 bg-background">
       <Reveal>
-        <div className="mx-auto max-w-7xl px-6 mb-16 text-center">
-          <p className="text-sm font-bold tracking-[0.28em] text-brand-soft">WHY ENRICH</p>
-          <h2 className="mt-5 text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-black tracking-tight leading-[0.95] text-balance">
+        <div className="mx-auto max-w-4xl px-6 mb-14 text-center">
+          <p className="text-xs sm:text-sm font-bold tracking-[0.28em] text-brand-soft">WHY ENRICH</p>
+          <h2 className="mt-4 text-4xl sm:text-5xl md:text-6xl font-black tracking-tight leading-[1.02] text-balance">
             A complete marketing<br className="hidden sm:block" /> operating system
           </h2>
-          <p className="mt-7 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          <p className="mt-5 text-base md:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
             Everything your team needs to plan, execute, and analyze campaigns — powered by AI specialists that actually do the work.
           </p>
         </div>
