@@ -7,6 +7,8 @@ import samImg from "@/assets/agent-sam.jpg";
 import kaiImg from "@/assets/agent-kai.jpg";
 import angelaImg from "@/assets/agent-angela.jpg";
 import heroDash from "@/assets/hero-dashboard.jpg";
+import heroVideo from "@/assets/hero.mp4.asset.json";
+import enrichMark from "@/assets/enrich-mark.png.asset.json";
 import featContent from "@/assets/feature-content.jpg";
 import featAds from "@/assets/feature-ads.jpg";
 import featBrand from "@/assets/feature-brand.jpg";
