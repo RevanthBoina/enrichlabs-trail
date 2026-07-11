@@ -1,6 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ArrowRight, ArrowUp, Plus, Shuffle, Sparkles, Menu, Play, Check } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import Particles from "@tsparticles/react";
+import { loadSlim } from "@tsparticles/slim";
+import type { Engine } from "@tsparticles/engine";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import helenaImg from "@/assets/agent-helena.jpg";
 import samImg from "@/assets/agent-sam.jpg";
@@ -14,6 +19,11 @@ import featAds from "@/assets/feature-ads.jpg";
 import featBrandGuidelines from "@/assets/feature-brand-guidelines.jpg";
 import featControlWorkflow from "@/assets/feature-control-workflow.jpg";
 import featAnalytics from "@/assets/feature-analytics.jpg";
+import gatherImg from "@/assets/step-gather.svg";
+import executeImg from "@/assets/step-execute.svg";
+
+// Register GSAP plugins
+gsap.registerPlugin(ScrollTrigger);
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -33,19 +43,23 @@ function useReducedMotion() {
   return reduced;
 }
 
-/* Scroll-reveal with staggered delay via IntersectionObserver at 15% visibility */
+/* Scroll-reveal with optional char splitting via IntersectionObserver at 15% visibility */
 function Reveal({
   children,
   delay = 0,
   className = "",
   from = "up",
+  splitChars = false,
 }: {
   children: ReactNode;
   delay?: number;
   className?: string;
   from?: "up" | "left";
+  splitChars?: boolean;
 }) {
   const ref = useRef<HTMLDivElement | null>(null);
+  const reduced = useReducedMotion();
+
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -61,7 +75,27 @@ function Reveal({
     io.observe(el);
     return () => io.disconnect();
   }, []);
+
   const base = from === "left" ? "reveal-from-left" : "reveal-on-scroll";
+
+  // If splitChars is true, split text content into spans with staggered delays
+  if (splitChars && typeof children === "string" && !reduced) {
+    const chars = children.split("");
+    return (
+      <div ref={ref} className={`${base} ${className}`}>
+        {chars.map((char, i) => (
+          <span
+            key={i}
+            className="reveal-on-scroll inline-block"
+            style={{ transitionDelay: `${delay + i * 20}ms` }}
+          >
+            {char === " " ? "\u00A0" : char}
+          </span>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div ref={ref} className={`${base} ${className}`} style={{ transitionDelay: `${delay}ms` }}>
       {children}
@@ -99,6 +133,138 @@ function useTilt(max = 7) {
     };
   }, [max]);
   return ref;
+}
+
+/* ---------- STEP 3: Layered atmospheric background component ---------- */
+function AtmosphericBackground({ 
+  gridRef, 
+  gradientRef, 
+  particlesRef 
+}: { 
+  gridRef?: React.RefObject<HTMLDivElement | null>;
+  gradientRef?: React.RefObject<HTMLDivElement | null>;
+  particlesRef?: React.RefObject<HTMLDivElement | null>;
+}) {
+  const reduced = useReducedMotion();
+  const [isMobile, setIsMobile] = useState(false);
+  const particlesId = useRef(`particles-${Math.random().toString(36).substr(2, 9)}`);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    setIsMobile(mq.matches);
+    const cb = () => setIsMobile(mq.matches);
+    mq.addEventListener("change", cb);
+    return () => mq.removeEventListener("change", cb);
+  }, []);
+
+  const particlesOptions = {
+    particles: {
+      number: { value: isMobile ? 15 : 40, density: { enable: true, area: 900 } },
+      color: { value: ["#a855f7", "#2DD4BF"] },
+      size: { value: { min: 1, max: 2.5 } },
+      opacity: { value: 0.4 },
+      move: { 
+        enable: true, 
+        speed: 0.3, 
+        direction: "none", 
+        random: true 
+      },
+      links: { 
+        enable: !isMobile,
+        distance: 120, 
+        color: "#a855f7", 
+        opacity: 0.15 
+      }
+    }
+  };
+
+  const particlesInit = async (engine: Engine) => {
+    await loadSlim(engine);
+  };
+
+  // Set up parallax effects for decorative layers (STEP 7)
+  useEffect(() => {
+    if (reduced) return;
+
+    const setupParallax = () => {
+      // Grid layer parallax - slowest
+      if (gridRef?.current) {
+        gsap.to(gridRef.current, {
+          yPercent: 15,
+          ease: "none",
+          scrollTrigger: {
+            trigger: gridRef.current.parentElement,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: true
+          }
+        });
+      }
+
+      // Gradient blob parallax - faster
+      if (gradientRef?.current) {
+        gsap.to(gradientRef.current, {
+          yPercent: 30,
+          ease: "none",
+          scrollTrigger: {
+            trigger: gradientRef.current.parentElement,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: true
+          }
+        });
+      }
+    };
+
+    setupParallax();
+
+    return () => {
+      ScrollTrigger.getAll().forEach(t => t.kill());
+    };
+  }, [reduced, gridRef, gradientRef]);
+
+  return (
+    <>
+      {/* Grid layer */}
+      <div 
+        ref={gridRef}
+        className="absolute inset-0 parallax-grid pointer-events-none"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(168,85,247,0.06) 1px, transparent 1px), 
+            linear-gradient(90deg, rgba(168,85,247,0.06) 1px, transparent 1px)
+          `,
+          backgroundSize: "48px 48px",
+          maskImage: "radial-gradient(ellipse at center, black 40%, transparent 80%)",
+          WebkitMaskImage: "radial-gradient(ellipse at center, black 40%, transparent 80%)"
+        }}
+      />
+      
+      {/* Gradient layer */}
+      <div 
+        ref={gradientRef}
+        className="absolute inset-0 parallax-gradient pointer-events-none"
+        style={{
+          background: `
+            radial-gradient(circle at 30% 20%, rgba(168,85,247,0.25), transparent 50%), 
+            radial-gradient(circle at 80% 70%, rgba(45,212,191,0.12), transparent 50%)
+          `
+        }}
+      />
+      
+      {/* Particle layer */}
+      {!reduced && (
+        <div ref={particlesRef} className="absolute inset-0 parallax-particles pointer-events-none">
+          <Particles
+            id={particlesId.current}
+            init={particlesInit}
+            options={particlesOptions}
+            className="w-full h-full"
+          />
+        </div>
+      )}
+    </>
+  );
 }
 
 /* Count-up when scrolled into view. Preserves suffix like "+", "/7", "H+". */
@@ -174,8 +340,8 @@ const features = [
 ];
 
 const steps = [
-  { n: "01", title: "Gather", tagline: "Continuous research", body: "Kai listens across social, search, and communities. Sam tracks keywords and competitors. Your agents surface opportunities before your team even opens a dashboard.", img: kaiImg },
-  { n: "02", title: "Execute", tagline: "Autonomous execution", body: "Helena writes blogs, ads, and landing pages. Angela drafts and sends email campaigns. Everything ships to your CMS, ad accounts, and ESP — with your review when you want it.", img: helenaImg },
+  { n: "01", title: "Gather", tagline: "Continuous research", body: "Kai listens across social, search, and communities. Sam tracks keywords and competitors. Your agents surface opportunities before your team even opens a dashboard.", img: gatherImg },
+  { n: "02", title: "Execute", tagline: "Autonomous execution", body: "Helena writes blogs, ads, and landing pages. Angela drafts and sends email campaigns. Everything ships to your CMS, ad accounts, and ESP — with your review when you want it.", img: executeImg },
   { n: "03", title: "Analyze", tagline: "Insights that loop back", body: "Live dashboards track ROI, traffic, and revenue across channels. Results feed straight back into the next brief, so every campaign compounds on the last.", img: featAnalytics },
 ];
 
@@ -215,7 +381,8 @@ function Nav() {
       <div className={`mx-auto max-w-7xl px-6 flex items-center justify-between gap-4 transition-all duration-300 ${scrolled ? "h-14" : "h-16"}`}>
         <a href="#" className="flex items-center gap-2 font-black text-lg">
           <span className="grid place-items-center w-7 h-7 rounded-md bg-gradient-brand shadow-glow">
-            <Sparkles className="w-4 h-4 text-white" />
+            {/* STEP 8: Teal icon hover on logo icon */}
+            <Sparkles className="w-4 h-4 text-white icon-hover" />
           </span>
           Enrich Labs
         </a>
@@ -231,7 +398,8 @@ function Nav() {
           <a href="#" className="inline-flex items-center rounded-full bg-lime px-4 py-2 text-sm font-semibold text-[oklch(0.2_0.05_285)] hover:brightness-95 transition btn-lift">
             Get Started
           </a>
-          <button className="md:hidden p-2" onClick={() => setOpen(!open)} aria-label="Menu"><Menu className="w-5 h-5" /></button>
+          {/* STEP 8: Teal icon hover on menu button */}
+          <button className="md:hidden p-2 icon-hover" onClick={() => setOpen(!open)} aria-label="Menu"><Menu className="w-5 h-5" /></button>
         </div>
       </div>
       {open && (
@@ -257,19 +425,42 @@ function AnnouncementBar() {
   );
 }
 
-/* Animated gradient mesh backdrop — soft orbs drifting behind hero/stats */
+/* Animated gradient mesh backdrop — soft orbs drifting behind hero/stats with scroll-linked parallax */
 function MeshBackdrop({ intensity = 1 }: { intensity?: number }) {
+  const orb1Ref = useRef<HTMLDivElement>(null);
+  const orb2Ref = useRef<HTMLDivElement>(null);
+  const orb3Ref = useRef<HTMLDivElement>(null);
+  const reduced = useReducedMotion();
+
+  // Scroll-linked parallax for orbs - different multipliers for depth
+  useEffect(() => {
+    if (reduced) return;
+    
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (orb1Ref.current) orb1Ref.current.style.transform = `translateY(${y * 0.15}px)`;
+      if (orb2Ref.current) orb2Ref.current.style.transform = `translateY(${y * 0.1}px)`;
+      if (orb3Ref.current) orb3Ref.current.style.transform = `translateY(${y * 0.2}px)`;
+    };
+    
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [reduced]);
+
   return (
     <div aria-hidden className="absolute inset-0 overflow-hidden pointer-events-none">
       <div
+        ref={orb1Ref}
         className="absolute -top-24 -left-24 w-[55%] h-[70%] rounded-full blur-3xl animate-mesh"
         style={{ background: "radial-gradient(circle, oklch(0.65 0.22 295 / 0.55) 0%, transparent 70%)", opacity: 0.9 * intensity }}
       />
       <div
+        ref={orb2Ref}
         className="absolute top-1/3 -right-32 w-[55%] h-[70%] rounded-full blur-3xl animate-mesh-2"
         style={{ background: "radial-gradient(circle, oklch(0.72 0.2 320 / 0.5) 0%, transparent 70%)", opacity: 0.85 * intensity, animationDelay: "-6s" }}
       />
       <div
+        ref={orb3Ref}
         className="absolute bottom-0 left-1/3 w-[45%] h-[55%] rounded-full blur-3xl animate-mesh"
         style={{ background: "radial-gradient(circle, oklch(0.55 0.25 285 / 0.45) 0%, transparent 70%)", opacity: 0.8 * intensity, animationDelay: "-10s" }}
       />
@@ -306,6 +497,10 @@ function MobileHeroCanvas() {
 
 function Hero() {
   const [isMobile, setIsMobile] = useState(false);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const gradientRef = useRef<HTMLDivElement>(null);
+  const particlesRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 767px)");
     setIsMobile(mq.matches);
@@ -316,7 +511,9 @@ function Hero() {
 
   return (
     <section className="relative overflow-hidden bg-gradient-hero">
-      <MeshBackdrop />
+      {/* STEP 3: Layered atmospheric background */}
+      <AtmosphericBackground gridRef={gridRef} gradientRef={gradientRef} particlesRef={particlesRef} />
+      
       <div className="absolute inset-0 opacity-30 pointer-events-none">
         <div className="absolute -top-8 -left-10 w-64 h-40 rounded-2xl bg-[oklch(0.85_0.08_80)] rotate-[-8deg] animate-float" />
         <div className="absolute top-24 right-8 w-72 h-44 rounded-2xl bg-[oklch(0.3_0.15_20)] rotate-[6deg] animate-float" style={{ animationDelay: "1s" }} />
@@ -326,8 +523,10 @@ function Hero() {
       </div>
 
       <div className="relative mx-auto max-w-6xl px-6 pt-20 pb-16 text-center">
-        <h1 className="font-black tracking-tight text-balance text-6xl sm:text-7xl md:text-8xl lg:text-9xl leading-[0.9] animate-reveal">
-          AI marketers<br />that ship.
+        {/* Hero headline with character splitting and glow on emphasized word */}
+        <h1 className="font-black tracking-tight text-balance text-6xl sm:text-7xl md:text-8xl lg:text-9xl leading-[0.9]">
+          <Reveal splitChars className="inline">AI marketers</Reveal>{" "}
+          <Reveal splitChars delay={200} className="inline text-glow">that ship.</Reveal>
         </h1>
 
         <div className="mt-16 mx-auto max-w-2xl animate-reveal" style={{ animationDelay: "150ms" }}>
@@ -346,7 +545,8 @@ function Hero() {
                   <Shuffle className="w-4 h-4" /> Briefs
                 </button>
               </div>
-              <button className="inline-flex items-center gap-2 rounded-full bg-gradient-brand px-4 py-2 text-sm font-semibold text-white btn-lift">
+              {/* STEP 4: Neon border on primary CTA */}
+              <button className="inline-flex items-center gap-2 rounded-full bg-gradient-brand px-4 py-2 text-sm font-semibold text-white btn-lift neon-border">
                 Launch <ArrowUp className="w-4 h-4" />
               </button>
             </div>
@@ -418,8 +618,9 @@ function AgentsMarquee() {
       <Reveal>
         <div className="mx-auto max-w-4xl px-6 mb-14 text-center">
           <p className="text-xs sm:text-sm font-bold tracking-[0.28em] text-brand-soft">WHY ENRICH</p>
-          <h2 className="mt-4 text-4xl sm:text-5xl md:text-6xl font-black tracking-tight leading-[1.02] text-balance">
-            A complete marketing<br className="hidden sm:block" /> operating system
+          {/* Section title with character splitting and underline */}
+          <h2 className="section-title mt-4 text-4xl sm:text-5xl md:text-6xl font-black tracking-tight leading-[1.02] text-balance">
+            <Reveal splitChars className="inline">A complete marketing operating system</Reveal>
           </h2>
           <p className="mt-5 text-base md:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
             Everything your team needs to plan, execute, and analyze campaigns — powered by AI specialists that actually do the work.
@@ -507,7 +708,8 @@ function Stats() {
           {stats.map((s, i) => (
             <Reveal key={s.value} delay={i * 80}>
               <div className="border-t border-white/20 pt-6">
-                <CountUp target={s.value} className="text-6xl md:text-7xl font-black tracking-tight" />
+                {/* Amber accent with glow on stat numbers */}
+                <CountUp target={s.value} className="text-6xl md:text-7xl font-black tracking-tight text-accent-amber text-glow" />
                 <p className="mt-4 text-muted-foreground max-w-xs">{s.label}</p>
               </div>
             </Reveal>
@@ -522,6 +724,9 @@ function Stats() {
 function HowTo() {
   const itemRefs = useRef<Array<HTMLDivElement | null>>([]);
   const [active, setActive] = useState(0);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const gradientRef = useRef<HTMLDivElement>(null);
+  const particlesRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const els = itemRefs.current.filter(Boolean) as HTMLDivElement[];
@@ -561,13 +766,17 @@ function HowTo() {
   }, []);
 
   return (
-    <section className="py-28 md:py-32 bg-background">
-      <div className="mx-auto max-w-7xl px-6">
+    <section className="relative py-28 md:py-32 bg-background overflow-hidden">
+      {/* STEP 3: Layered atmospheric background for How It Works section */}
+      <AtmosphericBackground gridRef={gridRef} gradientRef={gradientRef} particlesRef={particlesRef} />
+      
+      <div className="relative mx-auto max-w-7xl px-6">
         <Reveal>
           <div className="max-w-3xl">
             <p className="text-sm font-bold tracking-[0.28em] text-brand-soft">HOW IT WORKS</p>
-            <h2 className="mt-5 text-5xl sm:text-6xl md:text-7xl font-black tracking-tight leading-[0.95] text-balance">
-              Your autonomous<br className="hidden sm:block" /> marketing workflow
+            {/* Section title with character splitting */}
+            <h2 className="section-title mt-5 text-5xl sm:text-6xl md:text-7xl font-black tracking-tight leading-[0.95] text-balance">
+              <Reveal splitChars className="inline">Your autonomous marketing workflow</Reveal>
             </h2>
             <p className="mt-6 text-lg md:text-xl text-muted-foreground leading-relaxed">
               Enrich specialists work together in real time — research feeds content, content fuels campaigns, and insights inform the next brief.
@@ -669,7 +878,8 @@ function AgentCard({ a, i }: { a: (typeof agents)[number]; i: number }) {
   const tiltRef = useTilt(7);
   return (
     <Reveal delay={i * 80}>
-      <div ref={tiltRef} className="tilt-card group rounded-3xl overflow-hidden border border-border bg-card hover:border-brand/50 transition-colors">
+      {/* STEP 6: Agent card with hover glow */}
+      <div ref={tiltRef} className="agent-card tilt-card group rounded-3xl overflow-hidden border border-border bg-card hover:border-brand/50 transition-colors">
         <div className="aspect-square overflow-hidden">
           <img src={a.img} alt={`${a.name} — ${a.role}`} loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
         </div>
@@ -692,8 +902,9 @@ function MeetTeam() {
       <div className="mx-auto max-w-7xl px-6">
         <Reveal>
           <p className="text-sm font-bold tracking-[0.28em] text-brand-soft">MEET YOUR TEAM</p>
-          <h2 className="mt-5 text-5xl sm:text-6xl md:text-7xl font-black tracking-tight leading-[0.95] text-balance max-w-3xl">
-            Four specialists.<br />One relentless team.
+          {/* Section title with character splitting */}
+          <h2 className="section-title mt-5 text-5xl sm:text-6xl md:text-7xl font-black tracking-tight leading-[0.95] text-balance max-w-3xl">
+            <Reveal splitChars className="inline">Four specialists. One relentless team.</Reveal>
           </h2>
         </Reveal>
         <div className="mt-16 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -709,8 +920,9 @@ function Testimonials() {
     <section className="py-24 bg-background border-t border-border">
       <div className="mx-auto max-w-7xl px-6">
         <Reveal>
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-balance max-w-3xl">
-            Loved by marketing teams that mean growth.
+          {/* Section title with character splitting */}
+          <h2 className="section-title text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-balance max-w-3xl">
+            <Reveal splitChars className="inline">Loved by marketing teams that mean growth.</Reveal>
           </h2>
         </Reveal>
         <div className="mt-16 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -861,10 +1073,12 @@ function CTA() {
             Join thousands of teams growing faster with autonomous AI marketers.
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-3">
-            <a href="#" className="inline-flex items-center gap-2 rounded-full bg-lime px-6 py-3 font-semibold text-[oklch(0.2_0.05_285)] btn-lift">
+            {/* STEP 4: Neon border on primary CTA */}
+            <a href="#" className="inline-flex items-center gap-2 rounded-full bg-lime px-6 py-3 font-semibold text-[oklch(0.2_0.05_285)] btn-lift neon-border">
               Get Started — It's Free <ArrowRight className="w-4 h-4" />
             </a>
-            <a href="#" className="inline-flex items-center gap-2 rounded-full bg-white/10 hover:bg-white/15 px-6 py-3 font-semibold transition btn-lift">
+            {/* STEP 8: Teal accent on secondary/outline button */}
+            <a href="#" className="inline-flex items-center gap-2 rounded-full bg-white/10 hover:bg-white/15 px-6 py-3 font-semibold transition btn-lift neon-border-teal">
               Book a Demo
             </a>
           </div>

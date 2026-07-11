@@ -7,10 +7,9 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
   return (
@@ -26,7 +25,6 @@ function NotFoundComponent() {
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
-  useEffect(() => { reportLovableError(error, { boundary: "tanstack_root_error_component" }); }, [error]);
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
@@ -50,8 +48,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Enrich Labs — AI Marketing Operating System" },
       { name: "twitter:description", content: "Autonomous AI marketing agents that write, publish, optimize, and report across every channel — 24/7." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/282fda92-c966-46dd-8d2f-519481fd13a5/id-preview-1dd8638c--84afb57f-0226-47fa-8b8a-7e422e3f7f08.lovable.app-1783695744025.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/282fda92-c966-46dd-8d2f-519481fd13a5/id-preview-1dd8638c--84afb57f-0226-47fa-8b8a-7e422e3f7f08.lovable.app-1783695744025.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
