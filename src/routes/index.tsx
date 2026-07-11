@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ArrowRight, ArrowUp, Plus, Shuffle, Sparkles, Menu, Play, Check } from "lucide-react";
+import { ArrowRight, ArrowUp, Plus, Shuffle, Sparkles, Menu, Check } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import Particles from "@tsparticles/react";
 import { loadSlim } from "@tsparticles/slim";
@@ -8,7 +8,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { IntegrationIcon, integrationColors } from "@/components/IntegrationIcon";
 import { CustomCursor } from "@/components/CustomCursor";
-import { StepConnector } from "@/components/StepConnector";
+import { LottieAnimation } from "@/components/LottieAnimation";
 
 import helenaImg from "@/assets/agent-helena.jpg";
 import samImg from "@/assets/agent-sam.jpg";
@@ -17,13 +17,6 @@ import angelaImg from "@/assets/agent-angela.jpg";
 import heroDash from "@/assets/hero-dashboard.jpg";
 import heroVideo from "@/assets/hero.mp4.asset.json";
 import enrichMark from "@/assets/enrich-mark.png.asset.json";
-import featContent from "@/assets/feature-content.jpg";
-import featAds from "@/assets/feature-ads.jpg";
-import featBrandGuidelines from "@/assets/feature-brand-guidelines.jpg";
-import featControlWorkflow from "@/assets/feature-control-workflow.jpg";
-import featAnalytics from "@/assets/feature-analytics.jpg";
-import gatherImg from "@/assets/step-gather.svg";
-import executeImg from "@/assets/step-execute.svg";
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger);
@@ -46,6 +39,19 @@ function useReducedMotion() {
   return reduced;
 }
 
+// Shared IntersectionObserver for all Reveal components - reduces overhead from multiple observers
+const sharedRevealObserver = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("is-visible");
+        sharedRevealObserver.unobserve(entry.target);
+      }
+    });
+  },
+  { threshold: 0.15, rootMargin: "0px 0px -40px 0px" }
+);
+
 /* Scroll-reveal with optional char splitting via IntersectionObserver at 15% visibility */
 function Reveal({
   children,
@@ -66,17 +72,9 @@ function Reveal({
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          el.classList.add("is-visible");
-          io.unobserve(el);
-        }
-      },
-      { threshold: 0.15, rootMargin: "0px 0px -40px 0px" },
-    );
-    io.observe(el);
-    return () => io.disconnect();
+    // Use shared observer instead of creating a new one per component
+    sharedRevealObserver.observe(el);
+    return () => sharedRevealObserver.unobserve(el);
   }, []);
 
   const base = from === "left" ? "reveal-from-left" : "reveal-on-scroll";
@@ -151,6 +149,8 @@ function AtmosphericBackground({
   const reduced = useReducedMotion();
   const [isMobile, setIsMobile] = useState(false);
   const particlesId = useRef(`particles-${Math.random().toString(36).substr(2, 9)}`);
+  // Store only this component's ScrollTriggers
+  const scrollTriggersRef = useRef<ScrollTrigger[]>([]);
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 767px)");
@@ -188,41 +188,40 @@ function AtmosphericBackground({
   // Set up parallax effects for decorative layers (STEP 7)
   useEffect(() => {
     if (reduced) return;
+    scrollTriggersRef.current = []; // Reset on each run
 
-    const setupParallax = () => {
-      // Grid layer parallax - slowest
-      if (gridRef?.current) {
-        gsap.to(gridRef.current, {
-          yPercent: 15,
-          ease: "none",
-          scrollTrigger: {
-            trigger: gridRef.current.parentElement,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: true
-          }
-        });
-      }
+    // Grid layer parallax - slowest
+    if (gridRef?.current) {
+      const trigger = ScrollTrigger.create({
+        trigger: gridRef.current.parentElement,
+        start: "top bottom",
+        end: "bottom top",
+        scrub: true,
+        onUpdate: (self) => {
+          gsap.set(gridRef.current, { yPercent: self.progress * 15 });
+        }
+      });
+      scrollTriggersRef.current.push(trigger);
+    }
 
-      // Gradient blob parallax - faster
-      if (gradientRef?.current) {
-        gsap.to(gradientRef.current, {
-          yPercent: 30,
-          ease: "none",
-          scrollTrigger: {
-            trigger: gradientRef.current.parentElement,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: true
-          }
-        });
-      }
-    };
-
-    setupParallax();
+    // Gradient blob parallax - faster
+    if (gradientRef?.current) {
+      const trigger = ScrollTrigger.create({
+        trigger: gradientRef.current.parentElement,
+        start: "top bottom",
+        end: "bottom top",
+        scrub: true,
+        onUpdate: (self) => {
+          gsap.set(gradientRef.current, { yPercent: self.progress * 30 });
+        }
+      });
+      scrollTriggersRef.current.push(trigger);
+    }
 
     return () => {
-      ScrollTrigger.getAll().forEach(t => t.kill());
+      // Only kill this component's triggers, not all ScrollTriggers
+      scrollTriggersRef.current.forEach(t => t.kill());
+      scrollTriggersRef.current = [];
     };
   }, [reduced, gridRef, gradientRef]);
 
@@ -333,14 +332,21 @@ function CountUp({ target, className = "" }: { target: string; className?: strin
         const duration = 1400;
         const start = performance.now();
         const easeOutExpo = (t: number) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t));
+        let rafId: number;
+        let mounted = true;
         const tick = (now: number) => {
+          if (!mounted) return;
           const t = Math.min(1, (now - start) / duration);
           const v = Math.round(end * easeOutExpo(t));
           const withCommas = v.toLocaleString();
           setDisplay(`${withCommas}${suffix}`);
-          if (t < 1) requestAnimationFrame(tick);
+          if (t < 1) rafId = requestAnimationFrame(tick);
         };
-        requestAnimationFrame(tick);
+        rafId = requestAnimationFrame(tick);
+        return () => {
+          mounted = false;
+          cancelAnimationFrame(rafId);
+        };
       },
       { threshold: 0.4 },
     );
@@ -369,16 +375,16 @@ const agentThumbs = [
 ];
 
 const features = [
-  { title: "Ship campaigns end to end", body: "Your team is buried in briefs and dashboards. Enrich agents research, write, publish, and optimize across every channel — so campaigns actually ship, on time, on brand.", img: featContent },
-  { title: "Grow like a pro", body: "Enrich agents plan keywords, generate content, launch ads, and send emails on autopilot. Personalize at scale, run experiments in bulk, and know exactly what's working.", img: featAds },
-  { title: "Protect your brand", body: "Every agent learns your voice, guidelines, and offers from a central knowledge base. Stay consistent across blogs, ads, email, and social — without micromanaging every asset.", img: featBrandGuidelines },
-  { title: "Stay in control", body: "One workspace for every campaign, agent, and metric. Approve work, edit outputs, and track ROI in real time — with humans in the loop wherever it matters.", img: featControlWorkflow },
+  { title: "Ship campaigns end to end", body: "Your team is buried in briefs and dashboards. Enrich agents research, write, publish, and optimize across every channel — so campaigns actually ship, on time, on brand.", animation: "ecommerce" as const },
+  { title: "Grow like a pro", body: "Enrich agents plan keywords, generate content, launch ads, and send emails on autopilot. Personalize at scale, run experiments in bulk, and know exactly what's working.", animation: "marketing" as const },
+  { title: "Protect your brand", body: "Every agent learns your voice, guidelines, and offers from a central knowledge base. Stay consistent across blogs, ads, email, and social — without micromanaging every asset.", animation: "security" as const },
+  { title: "Stay in control", body: "One workspace for every campaign, agent, and metric. Approve work, edit outputs, and track ROI in real time — with humans in the loop wherever it matters.", animation: "dashboard" as const },
 ];
 
 const steps = [
-  { n: "01", title: "Gather", tagline: "Continuous research", body: "Kai listens across social, search, and communities. Sam tracks keywords and competitors. Your agents surface opportunities before your team even opens a dashboard.", img: gatherImg },
-  { n: "02", title: "Execute", tagline: "Autonomous execution", body: "Helena writes blogs, ads, and landing pages. Angela drafts and sends email campaigns. Everything ships to your CMS, ad accounts, and ESP — with your review when you want it.", img: executeImg },
-  { n: "03", title: "Analyze", tagline: "Insights that loop back", body: "Live dashboards track ROI, traffic, and revenue across channels. Results feed straight back into the next brief, so every campaign compounds on the last.", img: featAnalytics },
+  { n: "01", title: "Gather", tagline: "Continuous research", body: "Kai listens across social, search, and communities. Sam tracks keywords and competitors. Your agents surface opportunities before your team even opens a dashboard.", animation: "marketing" as const },
+  { n: "02", title: "Execute", tagline: "Autonomous execution", body: "Helena writes blogs, ads, and landing pages. Angela drafts and sends email campaigns. Everything ships to your CMS, ad accounts, and ESP — with your review when you want it.", animation: "automation" as const },
+  { n: "03", title: "Analyze", tagline: "Insights that loop back", body: "Live dashboards track ROI, traffic, and revenue across channels. Results feed straight back into the next brief, so every campaign compounds on the last.", animation: "analytics" as const },
 ];
 
 const agents = [
@@ -580,7 +586,7 @@ function Hero() {
               muted
               loop
               playsInline
-              preload="metadata"
+              preload="auto"
               aria-label="Enrich Labs AI marketing dashboard in motion"
               className="w-full h-full object-cover"
             />
@@ -735,8 +741,8 @@ function FeatureCard({ f, i }: { f: (typeof features)[number]; i: number }) {
         </div>
         <h3 className="mt-6 text-3xl md:text-4xl font-black tracking-tight">{f.title}</h3>
         <p className="mt-4 text-muted-foreground leading-relaxed">{f.body}</p>
-        <div className="mt-8 aspect-[16/10] rounded-2xl overflow-hidden border border-border">
-          <img src={f.img} alt={f.title} loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+        <div className="mt-8 aspect-[16/10] rounded-2xl overflow-hidden border border-border flex items-center justify-center">
+          <LottieAnimation type={f.animation} size={180} />
         </div>
       </div>
     </Reveal>
@@ -994,12 +1000,9 @@ function HowTo() {
                         pointerEvents: i === active ? "auto" : "none",
                       }}
                     >
-                      <img 
-                        src={s.img} 
-                        alt={`${s.title} — ${s.tagline}`} 
-                        loading="lazy" 
-                        className="absolute inset-0 w-full h-full object-cover"
-                      />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <LottieAnimation type={s.animation} size={280} />
+                      </div>
                     </div>
                   ))}
                   
@@ -1113,7 +1116,7 @@ function Testimonials() {
         </Reveal>
         <div className="mt-16 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {testimonials.map((t, i) => (
-            <Reveal key={i} delay={(i % 3) * 80} from="left">
+            <Reveal key={t.name} delay={(i % 3) * 80} from="left">
               <figure className="relative rounded-3xl border border-border bg-card p-8 pl-10 flex flex-col justify-between min-h-[280px] h-full">
                 <span aria-hidden className="absolute left-0 top-6 bottom-6 w-[3px] rounded-full bg-gradient-to-b from-brand-soft via-brand to-brand-deep" />
                 <blockquote className="text-lg italic leading-relaxed font-medium text-foreground/95" style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
@@ -1335,4 +1338,3 @@ function Index() {
     </>
   );
 }
-export const _iconRef = Play;

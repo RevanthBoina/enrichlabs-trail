@@ -13,8 +13,8 @@ export function CustomCursor() {
     // Check for touch device - hide cursor on touch devices
     if (window.matchMedia("(pointer: coarse)").matches) return;
 
-    // Hide native cursor to prevent double cursor
-    document.body.style.cursor = "none";
+    // Add class to body to hide native cursor on interactive elements
+    document.body.classList.add("cursor-active");
 
     const onMove = (e: MouseEvent) => {
       posRef.current = { x: e.clientX, y: e.clientY };
@@ -53,8 +53,8 @@ export function CustomCursor() {
         el.removeEventListener("mouseleave", onLeaveInteractive);
       });
       cancelAnimationFrame(rafRef.current);
-      // Restore native cursor
-      document.body.style.cursor = "";
+      // Remove class to restore native cursor
+      document.body.classList.remove("cursor-active");
     };
   }, []);
 

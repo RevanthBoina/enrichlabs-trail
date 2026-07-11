@@ -275,8 +275,15 @@ button, .btn {
   .custom-cursor { display: none; }
 }
 
-/* Hide native cursor when custom cursor is active */
-body:has(.custom-cursor) * { cursor: none !important; }
+/* Hide native cursor on interactive elements when custom cursor is active */
+body.cursor-active a,
+body.cursor-active button,
+body.cursor-active [role="button"],
+body.cursor-active input,
+body.cursor-active select,
+body.cursor-active textarea {
+  cursor: none !important;
+}
 
 /* Section dividers - angled clip-path transitions */
 .divider-top-angled {
