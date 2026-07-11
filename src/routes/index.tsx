@@ -368,8 +368,6 @@ const agentThumbs = [
   { title: "Automation Builder", tone: "bg-[oklch(0.9_0.03_260)] text-[oklch(0.3_0.1_260)]" },
 ];
 
-const logos = ["Acme Corp", "Shop&Save", "Northwind", "Lumen", "BrightPath", "Vanta Retail", "Kestrel"];
-
 const features = [
   { title: "Ship campaigns end to end", body: "Your team is buried in briefs and dashboards. Enrich agents research, write, publish, and optimize across every channel — so campaigns actually ship, on time, on brand.", img: featContent },
   { title: "Grow like a pro", body: "Enrich agents plan keywords, generate content, launch ads, and send emails on autopilot. Personalize at scale, run experiments in bulk, and know exactly what's working.", img: featAds },
@@ -534,12 +532,14 @@ function MobileHeroCanvas() {
 }
 
 function Hero() {
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean | null>(null); // null = not mounted yet
+  const [mounted, setMounted] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
   const gradientRef = useRef<HTMLDivElement>(null);
   const particlesRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    setMounted(true);
     const mq = window.matchMedia("(max-width: 767px)");
     setIsMobile(mq.matches);
     const cb = () => setIsMobile(mq.matches);
@@ -547,20 +547,57 @@ function Hero() {
     return () => mq.removeEventListener("change", cb);
   }, []);
 
+  // Integration icons for trust bar
+  const integrationIcons = [
+    { slug: "shopify", label: "Shopify" },
+    { slug: "instagram", label: "Instagram" },
+    { slug: "reddit", label: "Reddit" },
+    { slug: "whatsapp", label: "WhatsApp" },
+    { slug: "linkedin", label: "LinkedIn" },
+    { slug: "slack", label: "Slack" },
+    { slug: "googleads", label: "Google Ads" },
+  ];
+
   return (
     <section className="relative overflow-hidden bg-gradient-hero">
       {/* STEP 3: Layered atmospheric background */}
       <AtmosphericBackground gridRef={gridRef} gradientRef={gradientRef} particlesRef={particlesRef} />
       
-      <div className="absolute inset-0 opacity-30 pointer-events-none">
-        <div className="absolute -top-8 -left-10 w-64 h-40 rounded-2xl bg-[oklch(0.85_0.08_80)] rotate-[-8deg] animate-float" />
-        <div className="absolute top-24 right-8 w-72 h-44 rounded-2xl bg-[oklch(0.3_0.15_20)] rotate-[6deg] animate-float" style={{ animationDelay: "1s" }} />
-        <div className="absolute bottom-20 left-12 w-56 h-36 rounded-2xl bg-[oklch(0.55_0.2_25)] rotate-[10deg] animate-float" style={{ animationDelay: "2s" }} />
-        <div className="absolute bottom-8 right-16 w-64 h-40 rounded-2xl bg-[oklch(0.4_0.15_340)] rotate-[-12deg] animate-float" style={{ animationDelay: "0.5s" }} />
-        <div className="absolute top-40 left-1/2 -translate-x-1/2 w-80 h-48 rounded-2xl bg-[oklch(0.25_0.1_260)] rotate-[4deg] animate-float" style={{ animationDelay: "1.5s" }} />
-      </div>
+      {/* Full-bleed video background on desktop */}
+      {!isMobile && mounted && (
+        <>
+          <div className="absolute inset-0 z-0">
+            <video
+              src={heroVideo.url}
+              poster={heroDash}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              aria-label="Enrich Labs AI marketing dashboard in motion"
+              className="w-full h-full object-cover"
+            />
+          </div>
+          {/* Dark gradient scrim for text legibility */}
+          <div 
+            className="absolute inset-0 z-[1] pointer-events-none"
+            style={{
+              background: `
+                linear-gradient(
+                  to bottom,
+                  oklch(0.15 0.03 285 / 0.85) 0%,
+                  oklch(0.15 0.03 285 / 0.7) 30%,
+                  oklch(0.15 0.03 285 / 0.6) 60%,
+                  oklch(0.15 0.03 285 / 0.8) 100%
+                )
+              `
+            }}
+          />
+        </>
+      )}
 
-      <div className="relative mx-auto max-w-6xl px-6 pt-20 pb-16 text-center">
+      <div className="relative z-10 mx-auto max-w-6xl px-6 pt-32 md:pt-40 pb-16 text-center">
         {/* Hero headline with word-split scale animation */}
         <h1 className="font-black tracking-tight text-balance text-6xl sm:text-7xl md:text-8xl lg:text-9xl leading-[0.9]">
           <AnimatedHeadline text="AI marketers" isHero />{" "}
@@ -589,52 +626,36 @@ function Hero() {
               </button>
             </div>
           </div>
-          <p className="mt-8 text-lg text-foreground/85">
-            From brief to launch, <span className="font-semibold">1,000+ companies</span> let Enrich agents run their marketing 24/7.
+          <p className="mt-8 text-lg text-white/90">
+            From brief to launch, Enrich agents run your marketing 24/7 — autonomously.
           </p>
         </div>
 
-        {/* Hero product visual — video on desktop, animated canvas on mobile */}
-        <Reveal delay={200} className="mt-16">
-          {isMobile ? (
+        {/* Hero product visual — canvas on mobile only */}
+        {isMobile === true && (
+          <Reveal delay={200} className="mt-16">
             <div className="mx-auto max-w-5xl">
               <MobileHeroCanvas />
             </div>
-          ) : (
-            <div className="relative mx-auto max-w-5xl rounded-3xl border border-white/10 overflow-hidden shadow-glow bg-black">
-              <video
-                src={heroVideo.url}
-                poster={heroDash}
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
-                aria-label="Enrich Labs AI marketing dashboard in motion"
-                className="w-full h-auto block"
-              />
-              <div
-                aria-hidden
-                className="absolute bottom-0 right-0 pointer-events-none"
-                style={{
-                  width: "9%",
-                  height: "12%",
-                  background:
-                    "radial-gradient(ellipse at center, oklch(0.08 0.03 285) 55%, oklch(0.08 0.03 285 / 0.85) 78%, transparent 100%)",
-                }}
-              />
-            </div>
-          )}
-        </Reveal>
+          </Reveal>
+        )}
       </div>
 
-      <div className="relative border-t border-white/10">
-        <div className="mx-auto max-w-7xl px-6 py-10 flex flex-wrap items-center justify-center gap-x-12 gap-y-6 opacity-80">
-          {logos.map((l, i) => (
-            <Reveal key={l} delay={i * 60}>
-              <span className="text-lg font-bold tracking-wide text-white/70">{l}</span>
-            </Reveal>
-          ))}
+      {/* Integration icons marquee */}
+      <div className="relative z-10 border-t border-white/10 overflow-hidden">
+        <div className="mx-auto max-w-7xl px-6 py-8">
+          <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10">
+            {integrationIcons.map((icon, i) => (
+              <Reveal key={icon.slug} delay={i * 60}>
+                <div 
+                  className="flex items-center justify-center w-14 h-14 rounded-full bg-white/10 backdrop-blur-sm"
+                  aria-label={icon.label}
+                >
+                  <IntegrationIcon slug={icon.slug} size={28} />
+                </div>
+              </Reveal>
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -735,9 +756,9 @@ function Features() {
 
 function Stats() {
   const stats = [
-    { value: "1,000+", label: "Companies trust Enrich agents to run and grow their marketing." },
     { value: "24/7", label: "Autonomous execution across content, ads, email, and social." },
     { value: "10H+", label: "On average, marketing teams save over 10 hours every week." },
+    { value: "∞", label: "Scales with your team — from startup to enterprise." },
   ];
   return (
     <section className="relative overflow-hidden py-24 bg-gradient-stats divider-top-angled" style={{ boxShadow: 'var(--border-glow-stats)' }}>
