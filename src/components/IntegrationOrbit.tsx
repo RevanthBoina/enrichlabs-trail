@@ -43,10 +43,30 @@ const WORKFLOWS = [
     from: { slug: "gmail", label: "Gmail" },
     to: { slug: "hubspot", label: "HubSpot" },
     steps: [
-      { id: "1", type: "trigger" as const, label: "New email received", description: "Gmail webhook triggered" },
-      { id: "2", type: "ai" as const, label: "AI extracts lead data", description: "NLP processing email content" },
-      { id: "3", type: "action" as const, label: "Create/update CRM record", description: "Sync to HubSpot" },
-      { id: "4", type: "complete" as const, label: "Notification sent", description: "Slack confirmation" },
+      {
+        id: "1",
+        type: "trigger" as const,
+        label: "New email received",
+        description: "Gmail webhook triggered",
+      },
+      {
+        id: "2",
+        type: "ai" as const,
+        label: "AI extracts lead data",
+        description: "NLP processing email content",
+      },
+      {
+        id: "3",
+        type: "action" as const,
+        label: "Create/update CRM record",
+        description: "Sync to HubSpot",
+      },
+      {
+        id: "4",
+        type: "complete" as const,
+        label: "Notification sent",
+        description: "Slack confirmation",
+      },
     ],
     analytics: { executions: 1247, successRate: 98.2, avgDuration: "1.2s", lastRun: "Just now" },
   },
@@ -55,11 +75,36 @@ const WORKFLOWS = [
     from: { slug: "linkedin", label: "LinkedIn" },
     to: { slug: "googledrive", label: "Google Sheets" },
     steps: [
-      { id: "1", type: "trigger" as const, label: "Post engagement detected", description: "Likes, comments, shares" },
-      { id: "2", type: "ai" as const, label: "Sentiment analysis", description: "Analyze engagement quality" },
-      { id: "3", type: "action" as const, label: "Log to spreadsheet", description: "Update analytics dashboard" },
-      { id: "4", type: "condition" as const, label: "High engagement?", description: "Sentiment > 80%" },
-      { id: "5", type: "complete" as const, label: "Alert team", description: "Slack notification" },
+      {
+        id: "1",
+        type: "trigger" as const,
+        label: "Post engagement detected",
+        description: "Likes, comments, shares",
+      },
+      {
+        id: "2",
+        type: "ai" as const,
+        label: "Sentiment analysis",
+        description: "Analyze engagement quality",
+      },
+      {
+        id: "3",
+        type: "action" as const,
+        label: "Log to spreadsheet",
+        description: "Update analytics dashboard",
+      },
+      {
+        id: "4",
+        type: "condition" as const,
+        label: "High engagement?",
+        description: "Sentiment > 80%",
+      },
+      {
+        id: "5",
+        type: "complete" as const,
+        label: "Alert team",
+        description: "Slack notification",
+      },
     ],
     analytics: { executions: 3891, successRate: 97.8, avgDuration: "2.4s", lastRun: "5m ago" },
   },
@@ -68,11 +113,31 @@ const WORKFLOWS = [
     from: { slug: "shopify", label: "Shopify" },
     to: { slug: "klaviyo", label: "Klaviyo" },
     steps: [
-      { id: "1", type: "trigger" as const, label: "New order created", description: "Purchase event" },
+      {
+        id: "1",
+        type: "trigger" as const,
+        label: "New order created",
+        description: "Purchase event",
+      },
       { id: "2", type: "ai" as const, label: "Customer segmentation", description: "RFM analysis" },
-      { id: "3", type: "action" as const, label: "Trigger email sequence", description: "Welcome series" },
-      { id: "4", type: "condition" as const, label: "High-value order?", description: "Order > $100" },
-      { id: "5", type: "complete" as const, label: "Upsell campaign", description: "Premium sequence" },
+      {
+        id: "3",
+        type: "action" as const,
+        label: "Trigger email sequence",
+        description: "Welcome series",
+      },
+      {
+        id: "4",
+        type: "condition" as const,
+        label: "High-value order?",
+        description: "Order > $100",
+      },
+      {
+        id: "5",
+        type: "complete" as const,
+        label: "Upsell campaign",
+        description: "Premium sequence",
+      },
     ],
     analytics: { executions: 2156, successRate: 99.1, avgDuration: "0.8s", lastRun: "2m ago" },
   },
@@ -81,10 +146,25 @@ const WORKFLOWS = [
     from: { slug: "notion", label: "Notion" },
     to: { slug: "wordpress", label: "WordPress" },
     steps: [
-      { id: "1", type: "trigger" as const, label: "Content approved", description: "Editorial workflow" },
+      {
+        id: "1",
+        type: "trigger" as const,
+        label: "Content approved",
+        description: "Editorial workflow",
+      },
       { id: "2", type: "ai" as const, label: "Format for web", description: "SEO optimization" },
-      { id: "3", type: "action" as const, label: "Publish to WordPress", description: "API integration" },
-      { id: "4", type: "complete" as const, label: "Social broadcast", description: "LinkedIn + X" },
+      {
+        id: "3",
+        type: "action" as const,
+        label: "Publish to WordPress",
+        description: "API integration",
+      },
+      {
+        id: "4",
+        type: "complete" as const,
+        label: "Social broadcast",
+        description: "LinkedIn + X",
+      },
     ],
     analytics: { executions: 842, successRate: 96.5, avgDuration: "3.1s", lastRun: "12m ago" },
   },
@@ -93,10 +173,25 @@ const WORKFLOWS = [
     from: { slug: "intercom", label: "Intercom" },
     to: { slug: "salesforce", label: "Salesforce" },
     steps: [
-      { id: "1", type: "trigger" as const, label: "New conversation", description: "Customer support ticket" },
+      {
+        id: "1",
+        type: "trigger" as const,
+        label: "New conversation",
+        description: "Customer support ticket",
+      },
       { id: "2", type: "ai" as const, label: "Classify intent", description: "Route to team" },
-      { id: "3", type: "action" as const, label: "Create Salesforce case", description: "Sync ticket" },
-      { id: "4", type: "complete" as const, label: "Auto-response", description: "Customer notified" },
+      {
+        id: "3",
+        type: "action" as const,
+        label: "Create Salesforce case",
+        description: "Sync ticket",
+      },
+      {
+        id: "4",
+        type: "complete" as const,
+        label: "Auto-response",
+        description: "Customer notified",
+      },
     ],
     analytics: { executions: 5623, successRate: 99.4, avgDuration: "0.5s", lastRun: "Just now" },
   },
@@ -111,17 +206,36 @@ interface IntegrationOrbitProps {
 
 export function IntegrationOrbit({ mouseOffset = { x: 0, y: 0 } }: IntegrationOrbitProps) {
   const [rotation, setRotation] = useState({ ring1: 0, ring2: 0, ring3: 0 });
-  const [activeWorkflow, setActiveWorkflow] = useState<typeof WORKFLOWS[0] | null>(null);
+  const [activeWorkflow, setActiveWorkflow] = useState<(typeof WORKFLOWS)[0] | null>(null);
   const [highlightedNodes, setHighlightedNodes] = useState<string[]>([]);
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState(0);
   const [isWorkflowPanelOpen, setIsWorkflowPanelOpen] = useState(false);
-  const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; size: number; speed: number; opacity: number }>>([]);
-  
+  const [particles, setParticles] = useState<
+    Array<{ id: number; x: number; y: number; size: number; speed: number; opacity: number }>
+  >([]);
+  const [isInViewport, setIsInViewport] = useState(false);
+
   const containerRef = useRef<HTMLDivElement>(null);
-  const animationRef = useRef<number>();
-  const workflowTimerRef = useRef<NodeJS.Timeout>();
+  const animationRef = useRef<number | undefined>(undefined);
+  const workflowTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const lastWorkflowIndex = useRef(-1);
+
+  // Viewport visibility detection - pause animations when out of view
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsInViewport(entry.isIntersecting);
+      },
+      { threshold: 0.1 },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   // Generate initial particles
   useEffect(() => {
@@ -136,30 +250,40 @@ export function IntegrationOrbit({ mouseOffset = { x: 0, y: 0 } }: IntegrationOr
     setParticles(initialParticles);
   }, []);
 
-  // Orbital rotation animation
+  // Orbital rotation animation - pauses when out of viewport
   useEffect(() => {
+    if (!isInViewport) {
+      // Cancel animation when out of viewport
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+        animationRef.current = undefined;
+      }
+      return;
+    }
+
     const startTime = performance.now();
-    
+
     const animate = (time: number) => {
       const elapsed = (time - startTime) / 1000;
-      
+
       setRotation({
         ring1: elapsed * (360 / 25), // 25s per rotation
         ring2: elapsed * (360 / 40) * -1, // 40s, reverse
         ring3: elapsed * (360 / 60), // 60s
       });
-      
+
       animationRef.current = requestAnimationFrame(animate);
     };
-    
+
     animationRef.current = requestAnimationFrame(animate);
-    
+
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
+        animationRef.current = undefined;
       }
     };
-  }, []);
+  }, [isInViewport]);
 
   // Status message cycling
   useEffect(() => {
@@ -169,83 +293,99 @@ export function IntegrationOrbit({ mouseOffset = { x: 0, y: 0 } }: IntegrationOr
     return () => clearInterval(interval);
   }, []);
 
-  // Auto-demonstrate workflows every 5-7 seconds
+  // Auto-demonstrate workflows every 5-7 seconds - pauses when out of viewport
   useEffect(() => {
+    if (!isInViewport) {
+      // Clear workflow when out of viewport
+      setHighlightedNodes([]);
+      setActiveWorkflow(null);
+      if (workflowTimerRef.current) {
+        clearInterval(workflowTimerRef.current);
+        workflowTimerRef.current = undefined;
+      }
+      return;
+    }
+
     const runWorkflow = () => {
       // Pick a different workflow than the last one
       let nextIndex;
       do {
         nextIndex = Math.floor(Math.random() * WORKFLOWS.length);
       } while (nextIndex === lastWorkflowIndex.current && WORKFLOWS.length > 1);
-      
+
       lastWorkflowIndex.current = nextIndex;
       const workflow = WORKFLOWS[nextIndex];
-      
+
       // Highlight involved nodes
       setHighlightedNodes([workflow.from.slug, "enrich", workflow.to.slug]);
       setActiveWorkflow(workflow);
-      
+
       // Clear after 4 seconds
       setTimeout(() => {
         setHighlightedNodes([]);
         setActiveWorkflow(null);
       }, 4000);
     };
-    
+
     // Initial run
     const initialTimeout = setTimeout(runWorkflow, 2000);
-    
+
     // Regular interval
-    workflowTimerRef.current = setInterval(() => {
-      runWorkflow();
-    }, 5000 + Math.random() * 2000);
-    
+    workflowTimerRef.current = setInterval(
+      () => {
+        runWorkflow();
+      },
+      5000 + Math.random() * 2000,
+    );
+
     return () => {
       clearTimeout(initialTimeout);
       if (workflowTimerRef.current) {
         clearInterval(workflowTimerRef.current);
+        workflowTimerRef.current = undefined;
       }
     };
-  }, []);
+  }, [isInViewport]);
 
   // Calculate node positions
   const nodePositions = useMemo(() => {
     const positions: Record<string, { x: number; y: number }> = {};
-    
+
     const ringRadii = { 1: 120, 2: 200, 3: 280 };
-    
+
     ALL_INTEGRATIONS.forEach((integration, index) => {
-      const ringIntegrations = ALL_INTEGRATIONS.filter(i => i.ring === integration.ring);
-      const ringIndex = ringIntegrations.findIndex(i => i.slug === integration.slug);
+      const ringIntegrations = ALL_INTEGRATIONS.filter((i) => i.ring === integration.ring);
+      const ringIndex = ringIntegrations.findIndex((i) => i.slug === integration.slug);
       const count = ringIntegrations.length;
-      
+
       // Calculate base angle
       const angleStep = (Math.PI * 2) / count;
       const baseAngle = ringIndex * angleStep;
-      
+
       // Add ring rotation
-      const rotationAngle = rotation[`ring${integration.ring}` as keyof typeof rotation] * (Math.PI / 180);
+      const rotationAngle =
+        rotation[`ring${integration.ring}` as keyof typeof rotation] * (Math.PI / 180);
       const angle = baseAngle + rotationAngle;
-      
+
       const radius = ringRadii[integration.ring as keyof typeof ringRadii];
-      
+
       positions[integration.slug] = {
         x: Math.cos(angle) * radius,
         y: Math.sin(angle) * radius,
       };
     });
-    
+
     return positions;
   }, [rotation]);
 
   // Connection lines for active workflow
   const connectionLines = useMemo(() => {
     if (!activeWorkflow) return [];
-    
+
     const fromPos = nodePositions[activeWorkflow.from.slug];
     const toPos = nodePositions[activeWorkflow.to.slug];
     const hubPos = { x: 0, y: 0 };
-    
+
     return [
       { from: fromPos, to: hubPos, id: "from-hub" },
       { from: hubPos, to: toPos, id: "hub-to" },
@@ -254,7 +394,7 @@ export function IntegrationOrbit({ mouseOffset = { x: 0, y: 0 } }: IntegrationOr
 
   const handleNodeClick = useCallback((slug: string) => {
     // Find a workflow that includes this integration
-    const workflow = WORKFLOWS.find(w => w.from.slug === slug || w.to.slug === slug);
+    const workflow = WORKFLOWS.find((w) => w.from.slug === slug || w.to.slug === slug);
     if (workflow) {
       setHighlightedNodes([workflow.from.slug, "enrich", workflow.to.slug]);
       setActiveWorkflow(workflow);
@@ -263,7 +403,7 @@ export function IntegrationOrbit({ mouseOffset = { x: 0, y: 0 } }: IntegrationOr
   }, []);
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className="relative w-full h-full overflow-hidden"
       style={{ willChange: "transform" }}
@@ -271,13 +411,14 @@ export function IntegrationOrbit({ mouseOffset = { x: 0, y: 0 } }: IntegrationOr
       {/* Subtle background effects */}
       <div className="absolute inset-0 pointer-events-none">
         {/* Radial gradient */}
-        <div 
+        <div
           className="absolute inset-0 opacity-[0.03]"
           style={{
-            background: "radial-gradient(circle at 50% 50%, rgba(168,85,247,0.5) 0%, transparent 50%)",
+            background:
+              "radial-gradient(circle at 50% 50%, rgba(168,85,247,0.5) 0%, transparent 50%)",
           }}
         />
-        
+
         {/* Particles */}
         {particles.map((particle) => (
           <div
@@ -294,7 +435,7 @@ export function IntegrationOrbit({ mouseOffset = { x: 0, y: 0 } }: IntegrationOr
             }}
           />
         ))}
-        
+
         {/* Concentric rings behind hub */}
         {[1, 2, 3].map((i) => (
           <div
@@ -312,12 +453,12 @@ export function IntegrationOrbit({ mouseOffset = { x: 0, y: 0 } }: IntegrationOr
       </div>
 
       {/* Central Hub */}
-      <div 
+      <div
         className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20"
         style={{ willChange: "transform" }}
       >
         {/* Outer glow */}
-        <div 
+        <div
           className="absolute inset-0 rounded-full"
           style={{
             width: 100,
@@ -327,13 +468,13 @@ export function IntegrationOrbit({ mouseOffset = { x: 0, y: 0 } }: IntegrationOr
             animation: "hub-pulse 3s ease-in-out infinite",
           }}
         />
-        
+
         {/* Hub container */}
         <div className="relative flex flex-col items-center">
           <div className="w-16 h-16 rounded-2xl bg-gradient-brand shadow-[0_0_40px_rgba(168,85,247,0.5)] flex items-center justify-center">
             <Zap className="w-8 h-8 text-white" />
           </div>
-          
+
           {/* Status text */}
           <div className="mt-3 text-center">
             <div className="text-xs font-medium text-brand-soft">
@@ -371,7 +512,7 @@ export function IntegrationOrbit({ mouseOffset = { x: 0, y: 0 } }: IntegrationOr
         const position = nodePositions[integration.slug];
         const isHighlighted = highlightedNodes.includes(integration.slug);
         const isDimmed = highlightedNodes.length > 0 && !isHighlighted;
-        
+
         return (
           <IntegrationNode
             key={integration.slug}
@@ -402,10 +543,30 @@ export function IntegrationOrbit({ mouseOffset = { x: 0, y: 0 } }: IntegrationOr
       {/* Animated status cards at bottom */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-3 z-30">
         {[
-          { icon: <RefreshCw className="w-3.5 h-3.5" />, label: "Workflows", value: "24 Active", color: "brand" },
-          { icon: <Check className="w-3.5 h-3.5" />, label: "API", value: "Connected", color: "lime" },
-          { icon: <Activity className="w-3.5 h-3.5" />, label: "Queue", value: "3 items", color: "teal" },
-          { icon: <Clock className="w-3.5 h-3.5" />, label: "Response", value: "0.3s", color: "white/60" },
+          {
+            icon: <RefreshCw className="w-3.5 h-3.5" />,
+            label: "Workflows",
+            value: "24 Active",
+            color: "brand",
+          },
+          {
+            icon: <Check className="w-3.5 h-3.5" />,
+            label: "API",
+            value: "Connected",
+            color: "lime",
+          },
+          {
+            icon: <Activity className="w-3.5 h-3.5" />,
+            label: "Queue",
+            value: "3 items",
+            color: "teal",
+          },
+          {
+            icon: <Clock className="w-3.5 h-3.5" />,
+            label: "Response",
+            value: "0.3s",
+            color: "white/60",
+          },
         ].map((stat, i) => (
           <motion.div
             key={stat.label}
@@ -417,7 +578,9 @@ export function IntegrationOrbit({ mouseOffset = { x: 0, y: 0 } }: IntegrationOr
             <span className={`text-${stat.color}`}>{stat.icon}</span>
             <div className="text-xs">
               <div className="text-white/40">{stat.label}</div>
-              <div className={`font-medium ${stat.color === "lime" ? "text-lime" : stat.color === "brand" ? "text-brand-soft" : stat.color === "teal" ? "text-teal" : "text-white"}`}>
+              <div
+                className={`font-medium ${stat.color === "lime" ? "text-lime" : stat.color === "brand" ? "text-brand-soft" : stat.color === "teal" ? "text-teal" : "text-white"}`}
+              >
                 {stat.value}
               </div>
             </div>

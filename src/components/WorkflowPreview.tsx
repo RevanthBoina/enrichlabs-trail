@@ -166,12 +166,31 @@ export function WorkflowPreview({ isOpen, onClose, workflow }: WorkflowPreviewPr
             {/* Analytics */}
             <div className="grid grid-cols-4 gap-px bg-white/5 border-t border-white/10">
               {[
-                { label: "Executions", value: executions.toLocaleString(), icon: <Activity className="w-3.5 h-3.5" /> },
-                { label: "Success", value: `${successRate.toFixed(1)}%`, icon: <Check className="w-3.5 h-3.5" /> },
-                { label: "Avg Time", value: workflow.analytics.avgDuration, icon: <Clock className="w-3.5 h-3.5" /> },
-                { label: "Last Run", value: workflow.analytics.lastRun, icon: <TrendingUp className="w-3.5 h-3.5" /> },
+                {
+                  label: "Executions",
+                  value: executions.toLocaleString(),
+                  icon: <Activity className="w-3.5 h-3.5" />,
+                },
+                {
+                  label: "Success",
+                  value: `${successRate.toFixed(1)}%`,
+                  icon: <Check className="w-3.5 h-3.5" />,
+                },
+                {
+                  label: "Avg Time",
+                  value: workflow.analytics.avgDuration,
+                  icon: <Clock className="w-3.5 h-3.5" />,
+                },
+                {
+                  label: "Last Run",
+                  value: workflow.analytics.lastRun,
+                  icon: <TrendingUp className="w-3.5 h-3.5" />,
+                },
               ].map((stat, i) => (
-                <div key={i} className="flex flex-col items-center gap-1 p-3 bg-[oklch(0.15_0.02_285)]">
+                <div
+                  key={i}
+                  className="flex flex-col items-center gap-1 p-3 bg-[oklch(0.15_0.02_285)]"
+                >
                   <div className="text-brand-soft">{stat.icon}</div>
                   <div className="text-sm font-semibold text-white">{stat.value}</div>
                   <div className="text-[10px] text-white/40">{stat.label}</div>

@@ -1,10 +1,27 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function CustomCursor() {
   const cursorRef = useRef<HTMLDivElement>(null);
   const posRef = useRef({ x: 0, y: 0 });
   const currentRef = useRef({ x: 0, y: 0 });
-  const rafRef = useRef<number>(0);
+  const rafRef = useRef<number | undefined>(undefined);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    // Viewport visibility detection - pause cursor when out of viewport
+    const el = cursorRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting);
+      },
+      { threshold: 0 },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const cursor = cursorRef.current;
@@ -24,7 +41,7 @@ export function CustomCursor() {
       // Smooth lerp towards target position (60ms lag)
       currentRef.current.x += (posRef.current.x - currentRef.current.x) * 0.15;
       currentRef.current.y += (posRef.current.y - currentRef.current.y) * 0.15;
-      
+
       if (cursor) {
         cursor.style.left = `${currentRef.current.x}px`;
         cursor.style.top = `${currentRef.current.y}px`;
@@ -37,7 +54,7 @@ export function CustomCursor() {
 
     // Interactive elements that expand the cursor
     const interactives = ".btn-lift, .tilt-card, a, button";
-    
+
     document.addEventListener("mousemove", onMove);
     document.querySelectorAll(interactives).forEach((el) => {
       el.addEventListener("mouseenter", onEnterInteractive);
@@ -52,11 +69,14 @@ export function CustomCursor() {
         el.removeEventListener("mouseenter", onEnterInteractive);
         el.removeEventListener("mouseleave", onLeaveInteractive);
       });
-      cancelAnimationFrame(rafRef.current);
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = undefined;
+      }
       // Remove class to restore native cursor
       document.body.classList.remove("cursor-active");
     };
-  }, []);
+  }, [isVisible]);
 
   return <div ref={cursorRef} className="custom-cursor" aria-hidden="true" />;
 }

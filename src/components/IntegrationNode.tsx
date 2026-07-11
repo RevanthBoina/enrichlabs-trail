@@ -36,44 +36,72 @@ export function IntegrationNode({
   const [floatingOffset, setFloatingOffset] = useState(0);
   const [rotationOffset, setRotationOffset] = useState(0);
   const [scalePulse, setScalePulse] = useState(1);
-  const animationRef = useRef<number>();
+  const [isInViewport, setIsInViewport] = useState(false);
+  const animationRef = useRef<number | undefined>(undefined);
+  const nodeRef = useRef<HTMLDivElement>(null);
+
+  // Viewport visibility detection - pause animations when out of view
+  useEffect(() => {
+    const el = nodeRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsInViewport(entry.isIntersecting);
+      },
+      { threshold: 0 },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   // Floating animation - unique per node based on ring and angle
+  // Pauses when out of viewport for performance
   useEffect(() => {
+    if (!isInViewport) {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+        animationRef.current = undefined;
+      }
+      return;
+    }
+
     const startTime = performance.now();
     const floatDuration = 4000 + ring * 500;
     const rotateDuration = 6000 + ring * 1000;
     const scaleDuration = 3000 + ring * 500;
-    
+
     const animate = (time: number) => {
       const elapsed = time - startTime;
-      
+
       // Floating: ±6px translateY
       const floatProgress = (elapsed % floatDuration) / floatDuration;
       const floatY = Math.sin(floatProgress * Math.PI * 2) * 6;
       setFloatingOffset(floatY);
-      
+
       // Micro rotation: ±3°
       const rotateProgress = (elapsed % rotateDuration) / rotateDuration;
       const rot = Math.sin(rotateProgress * Math.PI * 2) * 3;
       setRotationOffset(rot);
-      
+
       // Breathing scale: 0.98-1.02
       const scaleProgress = (elapsed % scaleDuration) / scaleDuration;
       const scale = 0.98 + (Math.sin(scaleProgress * Math.PI * 2) + 1) * 0.02;
       setScalePulse(scale);
-      
+
       animationRef.current = requestAnimationFrame(animate);
     };
-    
+
     animationRef.current = requestAnimationFrame(animate);
-    
+
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
+        animationRef.current = undefined;
       }
     };
-  }, [ring]);
+  }, [ring, isInViewport]);
 
   const statusColors = {
     connected: "bg-lime",
@@ -89,6 +117,7 @@ export function IntegrationNode({
 
   return (
     <div
+      ref={nodeRef}
       className="absolute cursor-pointer transition-all duration-300"
       style={{
         left: `calc(50% + ${position.x}px)`,
@@ -118,16 +147,17 @@ export function IntegrationNode({
         <div
           className="absolute inset-0 rounded-full"
           style={{
-            background: isActive || isHighlighted 
-              ? "radial-gradient(circle, rgba(168,85,247,0.5) 0%, transparent 70%)"
-              : "radial-gradient(circle, rgba(168,85,247,0.3) 0%, transparent 70%)",
+            background:
+              isActive || isHighlighted
+                ? "radial-gradient(circle, rgba(168,85,247,0.5) 0%, transparent 70%)"
+                : "radial-gradient(circle, rgba(168,85,247,0.3) 0%, transparent 70%)",
             transform: "scale(2)",
             filter: "blur(12px)",
             animation: "glow-pulse 2s ease-in-out infinite",
           }}
         />
       )}
-      
+
       {/* Main icon container */}
       <div
         className={`
@@ -142,7 +172,7 @@ export function IntegrationNode({
         }}
       >
         <IntegrationIcon slug={slug} size={26} />
-        
+
         {/* Status indicator */}
         <div
           className={`
@@ -154,10 +184,10 @@ export function IntegrationNode({
           {statusIcons[connectionStatus]}
         </div>
       </div>
-      
+
       {/* Tooltip */}
       {isHovered && (
-        <div 
+        <div
           className="absolute left-1/2 -translate-x-1/2 top-full mt-3 w-48 p-3 rounded-xl bg-[oklch(0.2_0.02_285)]/95 backdrop-blur-xl border border-white/10 shadow-xl animate-fade-in"
           style={{ backdropFilter: "blur(12px)" }}
         >
@@ -165,16 +195,20 @@ export function IntegrationNode({
             <IntegrationIcon slug={slug} size={20} />
             <span className="font-semibold text-white text-sm">{label}</span>
           </div>
-          
+
           <div className="space-y-1.5 text-xs">
             <div className="flex items-center justify-between">
               <span className="text-white/50">Status</span>
               <span className="flex items-center gap-1 text-lime">
                 <span className="w-1.5 h-1.5 rounded-full bg-lime animate-pulse" />
-                {connectionStatus === "connected" ? "Connected" : connectionStatus === "syncing" ? "Syncing" : "Error"}
+                {connectionStatus === "connected"
+                  ? "Connected"
+                  : connectionStatus === "syncing"
+                    ? "Syncing"
+                    : "Error"}
               </span>
             </div>
-            
+
             <div className="flex items-center justify-between">
               <span className="text-white/50">Last sync</span>
               <span className="flex items-center gap-1 text-white/70">
@@ -182,7 +216,7 @@ export function IntegrationNode({
                 {lastSync}
               </span>
             </div>
-            
+
             <div className="flex items-center justify-between">
               <span className="text-white/50">Workflows</span>
               <span className="text-brand-soft">3 active</span>
@@ -190,7 +224,7 @@ export function IntegrationNode({
           </div>
         </div>
       )}
-      
+
       <style>{`
         @keyframes glow-pulse {
           0%, 100% { opacity: 0.6; }

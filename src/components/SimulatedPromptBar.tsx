@@ -26,7 +26,7 @@ export function SimulatedPromptBar() {
     let charIndex = 0;
     setIsTyping(true);
     setDisplayText("");
-    
+
     const typeInterval = setInterval(() => {
       if (charIndex <= currentPrompt.length) {
         setDisplayText(currentPrompt.slice(0, charIndex));
@@ -34,14 +34,14 @@ export function SimulatedPromptBar() {
       } else {
         clearInterval(typeInterval);
         setIsTyping(false);
-        
+
         // Start thinking
         setTimeout(() => {
           setIsThinking(true);
           const dotsInterval = setInterval(() => {
             setThinkingDots((prev) => (prev + 1) % 4);
           }, 300);
-          
+
           // Clear and restart after thinking
           setTimeout(() => {
             clearInterval(dotsInterval);
@@ -67,12 +67,10 @@ export function SimulatedPromptBar() {
             readOnly
             className="flex-1 bg-transparent text-[oklch(0.3_0.05_285)] placeholder:text-[oklch(0.6_0.03_285)] outline-none text-base py-2"
           />
-          
+
           {/* Subtle typing cursor */}
-          {isTyping && (
-            <span className="w-0.5 h-4 bg-brand/60" />
-          )}
-          
+          {isTyping && <span className="w-0.5 h-4 bg-brand/60" />}
+
           {/* Thinking indicator */}
           {isThinking && (
             <div className="flex items-center gap-1.5 text-brand-soft/70">
@@ -88,11 +86,11 @@ export function SimulatedPromptBar() {
               <Plus className="w-4 h-4" />
             </button>
             <button className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-[oklch(0.4_0.1_290)] hover:bg-[oklch(0.95_0.05_290)] transition-colors">
-              <Shuffle className="w-4 h-4" /> 
+              <Shuffle className="w-4 h-4" />
               <span className="hidden sm:inline">Briefs</span>
             </button>
           </div>
-          
+
           <button className="inline-flex items-center gap-2 rounded-full bg-gradient-brand px-4 py-2 text-sm font-semibold text-white btn-lift neon-border">
             Launch <ArrowUp className="w-4 h-4" />
           </button>

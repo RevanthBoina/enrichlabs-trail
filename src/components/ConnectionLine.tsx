@@ -8,21 +8,49 @@ interface ConnectionLineProps {
   progress?: number;
 }
 
-export function ConnectionLine({ from, to, isActive, isHighlighted, progress = 0 }: ConnectionLineProps) {
+export function ConnectionLine({
+  from,
+  to,
+  isActive,
+  isHighlighted,
+  progress = 0,
+}: ConnectionLineProps) {
   const [dashOffset, setDashOffset] = useState(0);
   const [packetPosition, setPacketPosition] = useState(0);
-  const animationRef = useRef<number>();
+  const [isInViewport, setIsInViewport] = useState(false);
+  const animationRef = useRef<number | undefined>(undefined);
+  const lineRef = useRef<HTMLDivElement>(null);
 
   const dx = to.x - from.x;
   const dy = to.y - from.y;
   const length = Math.sqrt(dx * dx + dy * dy);
   const angle = Math.atan2(dy, dx) * (180 / Math.PI);
 
-  // Animate the dashed line when active
+  // Viewport visibility detection
   useEffect(() => {
-    if (!isActive) {
+    const el = lineRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsInViewport(entry.isIntersecting);
+      },
+      { threshold: 0 },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // Animate the dashed line when active and in viewport
+  useEffect(() => {
+    if (!isActive || !isInViewport) {
       setDashOffset(0);
       setPacketPosition(0);
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+        animationRef.current = undefined;
+      }
       return;
     }
 
@@ -43,14 +71,16 @@ export function ConnectionLine({ from, to, isActive, isHighlighted, progress = 0
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
+        animationRef.current = undefined;
       }
     };
-  }, [isActive]);
+  }, [isActive, isInViewport]);
 
   if (!isActive && !isHighlighted) return null;
 
   return (
     <div
+      ref={lineRef}
       className="absolute pointer-events-none transition-opacity duration-500"
       style={{
         left: from.x,
@@ -99,7 +129,8 @@ export function ConnectionLine({ from, to, isActive, isHighlighted, progress = 0
             left: `${packetPosition * 100}%`,
             top: "50%",
             transform: "translate(-50%, -50%)",
-            background: "radial-gradient(circle, rgba(168,85,247,1) 0%, rgba(168,85,247,0.5) 50%, transparent 100%)",
+            background:
+              "radial-gradient(circle, rgba(168,85,247,1) 0%, rgba(168,85,247,0.5) 50%, transparent 100%)",
             boxShadow: "0 0 8px rgba(168,85,247,0.8), 0 0 16px rgba(168,85,247,0.4)",
             willChange: "transform, left",
           }}
@@ -114,7 +145,8 @@ export function ConnectionLine({ from, to, isActive, isHighlighted, progress = 0
             left: `${((packetPosition - 0.3 + 1) % 1) * 100}%`,
             top: "50%",
             transform: "translate(-50%, -50%)",
-            background: "radial-gradient(circle, rgba(45,212,191,0.8) 0%, rgba(45,212,191,0.3) 50%, transparent 100%)",
+            background:
+              "radial-gradient(circle, rgba(45,212,191,0.8) 0%, rgba(45,212,191,0.3) 50%, transparent 100%)",
             boxShadow: "0 0 6px rgba(45,212,191,0.6)",
             willChange: "transform, left",
           }}

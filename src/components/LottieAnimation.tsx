@@ -2,13 +2,8 @@ import { useEffect, useRef, useState, Suspense } from "react";
 import Lottie, { LottieRefCurrentProps } from "lottie-react";
 
 // Animation type definitions matching the user's requirements
-type AnimationType = 
-  | "ecommerce" 
-  | "marketing" 
-  | "security" 
-  | "dashboard" 
-  | "automation" 
-  | "analytics";
+type AnimationType =
+  "ecommerce" | "marketing" | "security" | "dashboard" | "automation" | "analytics";
 
 interface LottieAnimationProps {
   type: AnimationType;
@@ -64,8 +59,21 @@ function AnimationIcon({ type, size = 120 }: { type: AnimationType; size?: numbe
       <svg width={size} height={size} viewBox="0 0 120 120" fill="none" className="ecommerce-icon">
         {/* Shopping cart */}
         <g transform="translate(20, 40)">
-          <path d="M5 5h4l8 25h25l8-20H18" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.9">
-            <animate attributeName="stroke-dasharray" values="0,200;150,200;150,200" dur="2s" repeatCount="indefinite" />
+          <path
+            d="M5 5h4l8 25h25l8-20H18"
+            stroke="white"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+            opacity="0.9"
+          >
+            <animate
+              attributeName="stroke-dasharray"
+              values="0,200;150,200;150,200"
+              dur="2s"
+              repeatCount="indefinite"
+            />
           </path>
           <circle cx="30" cy="38" r="5" fill="white" opacity="0.9">
             <animate attributeName="cy" values="38;36;38" dur="1s" repeatCount="indefinite" />
@@ -76,10 +84,26 @@ function AnimationIcon({ type, size = 120 }: { type: AnimationType; size?: numbe
           {/* Floating package */}
           <rect x="35" y="-15" width="25" height="20" rx="3" fill="white" opacity="0.7">
             <animate attributeName="y" values="-15;-25;-15" dur="2s" repeatCount="indefinite" />
-            <animate attributeName="opacity" values="0.7;0.9;0.7" dur="2s" repeatCount="indefinite" />
+            <animate
+              attributeName="opacity"
+              values="0.7;0.9;0.7"
+              dur="2s"
+              repeatCount="indefinite"
+            />
           </rect>
-          <path d="M35 -5 L47.5 -15 L60 -5" stroke="white" strokeWidth="2" fill="none" opacity="0.5">
-            <animate attributeName="d" values="M35 -5 L47.5 -15 L60 -5;M35 -15 L47.5 -25 L60 -15;M35 -5 L47.5 -15 L60 -5" dur="2s" repeatCount="indefinite" />
+          <path
+            d="M35 -5 L47.5 -15 L60 -5"
+            stroke="white"
+            strokeWidth="2"
+            fill="none"
+            opacity="0.5"
+          >
+            <animate
+              attributeName="d"
+              values="M35 -5 L47.5 -15 L60 -5;M35 -15 L47.5 -25 L60 -15;M35 -5 L47.5 -15 L60 -5"
+              dur="2s"
+              repeatCount="indefinite"
+            />
           </path>
         </g>
         {/* Background circles */}
@@ -87,7 +111,12 @@ function AnimationIcon({ type, size = 120 }: { type: AnimationType; size?: numbe
           <animate attributeName="r" values="15;20;15" dur="3s" repeatCount="indefinite" />
         </circle>
         <circle cx="20" cy="95" r="10" stroke="white" strokeWidth="2" fill="none" opacity="0.15">
-          <animate attributeName="opacity" values="0.15;0.3;0.15" dur="2.5s" repeatCount="indefinite" />
+          <animate
+            attributeName="opacity"
+            values="0.15;0.3;0.15"
+            dur="2.5s"
+            repeatCount="indefinite"
+          />
         </circle>
       </svg>
     ),
@@ -96,23 +125,58 @@ function AnimationIcon({ type, size = 120 }: { type: AnimationType; size?: numbe
         {/* Megaphone */}
         <g transform="translate(15, 35)">
           <path d="M5 20 L5 10 L40 5 L40 35 L5 30 Z" fill="white" opacity="0.8">
-            <animate attributeName="opacity" values="0.8;1;0.8" dur="1.5s" repeatCount="indefinite" />
+            <animate
+              attributeName="opacity"
+              values="0.8;1;0.8"
+              dur="1.5s"
+              repeatCount="indefinite"
+            />
           </path>
           <rect x="40" y="8" width="30" height="24" rx="2" fill="white" opacity="0.6" />
           {/* Sound waves */}
           <path d="M75 15 Q85 20 75 25" stroke="white" strokeWidth="2" fill="none" opacity="0.4">
-            <animate attributeName="opacity" values="0.4;0.8;0.4" dur="0.8s" repeatCount="indefinite" />
+            <animate
+              attributeName="opacity"
+              values="0.4;0.8;0.4"
+              dur="0.8s"
+              repeatCount="indefinite"
+            />
           </path>
           <path d="M82 10 Q95 20 82 30" stroke="white" strokeWidth="2" fill="none" opacity="0.3">
-            <animate attributeName="opacity" values="0.3;0.6;0.3" dur="0.8s" repeatCount="indefinite" begin="0.2s" />
+            <animate
+              attributeName="opacity"
+              values="0.3;0.6;0.3"
+              dur="0.8s"
+              repeatCount="indefinite"
+              begin="0.2s"
+            />
           </path>
           <path d="M89 5 Q105 20 89 35" stroke="white" strokeWidth="2" fill="none" opacity="0.2">
-            <animate attributeName="opacity" values="0.2;0.5;0.2" dur="0.8s" repeatCount="indefinite" begin="0.4s" />
+            <animate
+              attributeName="opacity"
+              values="0.2;0.5;0.2"
+              dur="0.8s"
+              repeatCount="indefinite"
+              begin="0.4s"
+            />
           </path>
         </g>
         {/* Growth arrow */}
-        <path d="M20 85 L50 55 L70 70 L95 40" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.6">
-          <animate attributeName="stroke-dasharray" values="0,100;100,100" dur="1.5s" repeatCount="indefinite" />
+        <path
+          d="M20 85 L50 55 L70 70 L95 40"
+          stroke="white"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+          opacity="0.6"
+        >
+          <animate
+            attributeName="stroke-dasharray"
+            values="0,100;100,100"
+            dur="1.5s"
+            repeatCount="indefinite"
+          />
         </path>
         <circle cx="95" cy="40" r="5" fill="white" opacity="0.8">
           <animate attributeName="r" values="5;7;5" dur="1s" repeatCount="indefinite" />
@@ -122,34 +186,89 @@ function AnimationIcon({ type, size = 120 }: { type: AnimationType; size?: numbe
     security: (
       <svg width={size} height={size} viewBox="0 0 120 120" fill="none" className="security-icon">
         {/* Shield */}
-        <path d="M60 10 L100 25 V55 C100 80 80 100 60 110 C40 100 20 80 20 55 V25 L60 10Z" 
-          fill="white" opacity="0.15" />
-        <path d="M60 20 L90 32 V55 C90 75 75 90 60 98 C45 90 30 75 30 55 V32 L60 20Z" 
-          stroke="white" strokeWidth="3" fill="none" opacity="0.6">
+        <path
+          d="M60 10 L100 25 V55 C100 80 80 100 60 110 C40 100 20 80 20 55 V25 L60 10Z"
+          fill="white"
+          opacity="0.15"
+        />
+        <path
+          d="M60 20 L90 32 V55 C90 75 75 90 60 98 C45 90 30 75 30 55 V32 L60 20Z"
+          stroke="white"
+          strokeWidth="3"
+          fill="none"
+          opacity="0.6"
+        >
           <animate attributeName="opacity" values="0.6;0.9;0.6" dur="2s" repeatCount="indefinite" />
         </path>
         {/* Checkmark */}
-        <path d="M45 55 L55 65 L75 45" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" fill="none">
-          <animate attributeName="stroke-dasharray" values="0,50;50,0" dur="0.8s" repeatCount="indefinite" />
+        <path
+          d="M45 55 L55 65 L75 45"
+          stroke="white"
+          strokeWidth="4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+        >
+          <animate
+            attributeName="stroke-dasharray"
+            values="0,50;50,0"
+            dur="0.8s"
+            repeatCount="indefinite"
+          />
         </path>
         {/* Lock icon */}
         <rect x="52" y="62" width="16" height="14" rx="2" fill="white" opacity="0.7" />
-        <path d="M55 62 V55 C55 50 58 48 60 48 C62 48 65 50 65 55 V62" stroke="white" strokeWidth="2" fill="none" opacity="0.9">
-          <animate attributeName="d" values="M55 62 V55 C55 50 58 48 60 48 C62 48 65 50 65 55 V62;M55 62 V55 C55 52 57 50 60 50 C63 50 65 52 65 55 V62;M55 62 V55 C55 50 58 48 60 48 C62 48 65 50 65 55 V62" dur="2s" repeatCount="indefinite" />
+        <path
+          d="M55 62 V55 C55 50 58 48 60 48 C62 48 65 50 65 55 V62"
+          stroke="white"
+          strokeWidth="2"
+          fill="none"
+          opacity="0.9"
+        >
+          <animate
+            attributeName="d"
+            values="M55 62 V55 C55 50 58 48 60 48 C62 48 65 50 65 55 V62;M55 62 V55 C55 52 57 50 60 50 C63 50 65 52 65 55 V62;M55 62 V55 C55 50 58 48 60 48 C62 48 65 50 65 55 V62"
+            dur="2s"
+            repeatCount="indefinite"
+          />
         </path>
         {/* Orbiting dots */}
         <circle cx="60" cy="10" r="4" fill="white" opacity="0.5">
-          <animateTransform attributeName="transform" type="rotate" from="0 60 60" to="360 60 60" dur="4s" repeatCount="indefinite" />
+          <animateTransform
+            attributeName="transform"
+            type="rotate"
+            from="0 60 60"
+            to="360 60 60"
+            dur="4s"
+            repeatCount="indefinite"
+          />
         </circle>
         <circle cx="100" cy="60" r="3" fill="white" opacity="0.4">
-          <animateTransform attributeName="transform" type="rotate" from="90 60 60" to="450 60 60" dur="5s" repeatCount="indefinite" />
+          <animateTransform
+            attributeName="transform"
+            type="rotate"
+            from="90 60 60"
+            to="450 60 60"
+            dur="5s"
+            repeatCount="indefinite"
+          />
         </circle>
       </svg>
     ),
     dashboard: (
       <svg width={size} height={size} viewBox="0 0 120 120" fill="none" className="dashboard-icon">
         {/* Monitor frame */}
-        <rect x="10" y="15" width="100" height="70" rx="5" stroke="white" strokeWidth="2" fill="none" opacity="0.3" />
+        <rect
+          x="10"
+          y="15"
+          width="100"
+          height="70"
+          rx="5"
+          stroke="white"
+          strokeWidth="2"
+          fill="none"
+          opacity="0.3"
+        />
         <rect x="15" y="20" width="90" height="55" rx="3" fill="white" opacity="0.1" />
         {/* Dashboard elements */}
         <rect x="20" y="25" width="35" height="20" rx="2" fill="white" opacity="0.5">
@@ -157,14 +276,31 @@ function AnimationIcon({ type, size = 120 }: { type: AnimationType; size?: numbe
         </rect>
         <rect x="60" y="25" width="40" height="20" rx="2" fill="white" opacity="0.3" />
         {/* Chart */}
-        <path d="M20 65 L40 55 L60 60 L80 45 L100 50" stroke="white" strokeWidth="2" fill="none" opacity="0.8">
-          <animate attributeName="stroke-dasharray" values="0,200;200,0" dur="1.5s" repeatCount="indefinite" />
+        <path
+          d="M20 65 L40 55 L60 60 L80 45 L100 50"
+          stroke="white"
+          strokeWidth="2"
+          fill="none"
+          opacity="0.8"
+        >
+          <animate
+            attributeName="stroke-dasharray"
+            values="0,200;200,0"
+            dur="1.5s"
+            repeatCount="indefinite"
+          />
         </path>
         <circle cx="40" cy="55" r="3" fill="white" opacity="0.9">
           <animate attributeName="cy" values="55;52;55" dur="1.5s" repeatCount="indefinite" />
         </circle>
         <circle cx="80" cy="45" r="3" fill="white" opacity="0.9">
-          <animate attributeName="cy" values="45;42;45" dur="1.5s" repeatCount="indefinite" begin="0.5s" />
+          <animate
+            attributeName="cy"
+            values="45;42;45"
+            dur="1.5s"
+            repeatCount="indefinite"
+            begin="0.5s"
+          />
         </circle>
         {/* Monitor stand */}
         <rect x="45" y="85" width="30" height="5" rx="2" fill="white" opacity="0.4" />
@@ -175,27 +311,57 @@ function AnimationIcon({ type, size = 120 }: { type: AnimationType; size?: numbe
       <svg width={size} height={size} viewBox="0 0 120 120" fill="none" className="automation-icon">
         {/* Gear 1 */}
         <g transform="translate(25, 25)">
-          <path d="M25 5 L28 12 L35 8 L33 15 L40 15 L35 20 L42 25 L35 27 L40 35 L32 33 L30 40 L25 35 L18 38 L22 30 L15 27 L22 23 L18 15 L25 18 Z" 
-            fill="white" opacity="0.8">
-            <animateTransform attributeName="transform" type="rotate" from="0 25 22" to="360 25 22" dur="8s" repeatCount="indefinite" />
+          <path
+            d="M25 5 L28 12 L35 8 L33 15 L40 15 L35 20 L42 25 L35 27 L40 35 L32 33 L30 40 L25 35 L18 38 L22 30 L15 27 L22 23 L18 15 L25 18 Z"
+            fill="white"
+            opacity="0.8"
+          >
+            <animateTransform
+              attributeName="transform"
+              type="rotate"
+              from="0 25 22"
+              to="360 25 22"
+              dur="8s"
+              repeatCount="indefinite"
+            />
           </path>
           <circle cx="25" cy="22" r="8" stroke="white" strokeWidth="2" fill="none" opacity="0.5" />
         </g>
         {/* Gear 2 */}
         <g transform="translate(55, 45)">
-          <path d="M20 4 L22 10 L28 7 L26 12 L32 12 L28 16 L34 20 L28 21 L32 27 L25 26 L23 32 L20 27 L14 29 L18 23 L12 21 L18 18 L14 12 L20 14 Z" 
-            fill="white" opacity="0.6">
-            <animateTransform attributeName="transform" type="rotate" from="360 20 18" to="0 20 18" dur="6s" repeatCount="indefinite" />
+          <path
+            d="M20 4 L22 10 L28 7 L26 12 L32 12 L28 16 L34 20 L28 21 L32 27 L25 26 L23 32 L20 27 L14 29 L18 23 L12 21 L18 18 L14 12 L20 14 Z"
+            fill="white"
+            opacity="0.6"
+          >
+            <animateTransform
+              attributeName="transform"
+              type="rotate"
+              from="360 20 18"
+              to="0 20 18"
+              dur="6s"
+              repeatCount="indefinite"
+            />
           </path>
           <circle cx="20" cy="18" r="6" stroke="white" strokeWidth="2" fill="none" opacity="0.4" />
         </g>
         {/* Connecting line */}
         <path d="M55 45 Q70 50 55 60" stroke="white" strokeWidth="2" fill="none" opacity="0.4">
-          <animate attributeName="stroke-dasharray" values="0,20;20,0" dur="1s" repeatCount="indefinite" />
+          <animate
+            attributeName="stroke-dasharray"
+            values="0,20;20,0"
+            dur="1s"
+            repeatCount="indefinite"
+          />
         </path>
         {/* Lightning bolt */}
         <path d="M75 35 L65 55 L72 55 L62 75 L80 50 L73 50 L85 35 Z" fill="white" opacity="0.9">
-          <animate attributeName="opacity" values="0.9;0.5;0.9" dur="1.5s" repeatCount="indefinite" />
+          <animate
+            attributeName="opacity"
+            values="0.9;0.5;0.9"
+            dur="1.5s"
+            repeatCount="indefinite"
+          />
         </path>
         {/* Dots flowing */}
         <circle r="3" fill="white" opacity="0.7">
@@ -229,8 +395,20 @@ function AnimationIcon({ type, size = 120 }: { type: AnimationType; size?: numbe
           <animate attributeName="y" values="20;40;20" dur="2.2s" repeatCount="indefinite" />
         </rect>
         {/* Trend line */}
-        <path d="M24 50 L49 35 L74 40 L99 20" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.5">
-          <animate attributeName="stroke-dasharray" values="0,100;100,0" dur="2s" repeatCount="indefinite" />
+        <path
+          d="M24 50 L49 35 L74 40 L99 20"
+          stroke="white"
+          strokeWidth="2"
+          strokeLinecap="round"
+          fill="none"
+          opacity="0.5"
+        >
+          <animate
+            attributeName="stroke-dasharray"
+            values="0,100;100,0"
+            dur="2s"
+            repeatCount="indefinite"
+          />
         </path>
         {/* Arrow up */}
         <path d="M100 15 L105 25 L102 25 L102 35 L98 35 L98 25 L95 25 Z" fill="white" opacity="0.8">
@@ -251,8 +429,8 @@ function LottieFromUrl({ url, size }: { url: string; size: number }) {
 
   useEffect(() => {
     fetch(url)
-      .then(res => res.json())
-      .then(data => setAnimationData(data))
+      .then((res) => res.json())
+      .then((data) => setAnimationData(data))
       .catch(() => setError(true));
   }, [url]);
 
@@ -287,7 +465,7 @@ export function LottieAnimation({ type, className = "", size = 120, url }: Lotti
 
   if (reduced) {
     return (
-      <div 
+      <div
         className={`flex items-center justify-center ${className}`}
         style={{ width: size, height: size, ...style }}
       >
@@ -297,10 +475,7 @@ export function LottieAnimation({ type, className = "", size = 120, url }: Lotti
   }
 
   return (
-    <div 
-      className={`lottie-wrapper ${className}`}
-      style={{ width: size, height: size, ...style }}
-    >
+    <div className={`lottie-wrapper ${className}`} style={{ width: size, height: size, ...style }}>
       <style>{`
         .lottie-wrapper {
           animation: float 6s ease-in-out infinite;
@@ -332,7 +507,7 @@ export function LottieAnimation({ type, className = "", size = 120, url }: Lotti
 // Custom hook for reduced motion detection
 function useReducedMotion() {
   const [reduced, setReduced] = useState(false);
-  
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -341,7 +516,7 @@ function useReducedMotion() {
     mq.addEventListener("change", cb);
     return () => mq.removeEventListener("change", cb);
   }, []);
-  
+
   return reduced;
 }
 

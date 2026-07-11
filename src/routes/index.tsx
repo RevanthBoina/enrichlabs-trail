@@ -1,6 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ArrowRight, ArrowUp, Plus, Shuffle, Sparkles, Menu, Check } from "lucide-react";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  type ReactNode,
+  type MouseEvent as ReactMouseEvent,
+} from "react";
 import Particles from "@tsparticles/react";
 import { loadSlim } from "@tsparticles/slim";
 import type { Engine } from "@tsparticles/engine";
@@ -61,7 +68,7 @@ function getSharedRevealObserver(): IntersectionObserver | null {
           }
         });
       },
-      { threshold: 0.15, rootMargin: "0px 0px -40px 0px" }
+      { threshold: 0.15, rootMargin: "0px 0px -40px 0px" },
     );
   }
   return sharedRevealObserver;
@@ -154,11 +161,11 @@ function useTilt(max = 7) {
 }
 
 /* ---------- STEP 3: Layered atmospheric background component ---------- */
-function AtmosphericBackground({ 
-  gridRef, 
-  gradientRef, 
-  particlesRef 
-}: { 
+function AtmosphericBackground({
+  gridRef,
+  gradientRef,
+  particlesRef,
+}: {
   gridRef?: React.RefObject<HTMLDivElement | null>;
   gradientRef?: React.RefObject<HTMLDivElement | null>;
   particlesRef?: React.RefObject<HTMLDivElement | null>;
@@ -183,19 +190,19 @@ function AtmosphericBackground({
       color: { value: ["#a855f7", "#2DD4BF"] },
       size: { value: { min: 1, max: 2.5 } },
       opacity: { value: 0.4 },
-      move: { 
-        enable: true, 
-        speed: 0.3, 
-        direction: "none" as const, 
-        random: true 
+      move: {
+        enable: true,
+        speed: 0.3,
+        direction: "none" as const,
+        random: true,
       },
-      links: { 
+      links: {
         enable: !isMobile,
-        distance: 120, 
-        color: "#a855f7", 
-        opacity: 0.15 
-      }
-    }
+        distance: 120,
+        color: "#a855f7",
+        opacity: 0.15,
+      },
+    },
   };
 
   const particlesInit = async (engine: Engine) => {
@@ -216,7 +223,7 @@ function AtmosphericBackground({
         scrub: true,
         onUpdate: (self) => {
           gsap.set(gridRef.current, { yPercent: self.progress * 15 });
-        }
+        },
       });
       scrollTriggersRef.current.push(trigger);
     }
@@ -230,14 +237,14 @@ function AtmosphericBackground({
         scrub: true,
         onUpdate: (self) => {
           gsap.set(gradientRef.current, { yPercent: self.progress * 30 });
-        }
+        },
       });
       scrollTriggersRef.current.push(trigger);
     }
 
     return () => {
       // Only kill this component's triggers, not all ScrollTriggers
-      scrollTriggersRef.current.forEach(t => t.kill());
+      scrollTriggersRef.current.forEach((t) => t.kill());
       scrollTriggersRef.current = [];
     };
   }, [reduced, gridRef, gradientRef]);
@@ -245,7 +252,7 @@ function AtmosphericBackground({
   return (
     <>
       {/* Grid layer */}
-      <div 
+      <div
         ref={gridRef}
         className="absolute inset-0 parallax-grid pointer-events-none"
         style={{
@@ -255,22 +262,22 @@ function AtmosphericBackground({
           `,
           backgroundSize: "48px 48px",
           maskImage: "radial-gradient(ellipse at center, black 40%, transparent 80%)",
-          WebkitMaskImage: "radial-gradient(ellipse at center, black 40%, transparent 80%)"
+          WebkitMaskImage: "radial-gradient(ellipse at center, black 40%, transparent 80%)",
         }}
       />
-      
+
       {/* Gradient layer */}
-      <div 
+      <div
         ref={gradientRef}
         className="absolute inset-0 parallax-gradient pointer-events-none"
         style={{
           background: `
             radial-gradient(circle at 30% 20%, rgba(168,85,247,0.25), transparent 50%), 
             radial-gradient(circle at 80% 70%, rgba(45,212,191,0.12), transparent 50%)
-          `
+          `,
         }}
       />
-      
+
       {/* Particle layer */}
       {!reduced && (
         <div ref={particlesRef} className="absolute inset-0 parallax-particles pointer-events-none">
@@ -286,13 +293,13 @@ function AtmosphericBackground({
 }
 
 /* Word-split scale animation for hero headline - settling into place effect */
-function AnimatedHeadline({ 
-  text, 
-  delay = 0, 
+function AnimatedHeadline({
+  text,
+  delay = 0,
   isHero = false,
-  glow = false
-}: { 
-  text: string; 
+  glow = false,
+}: {
+  text: string;
   delay?: number;
   isHero?: boolean;
   glow?: boolean;
@@ -308,12 +315,13 @@ function AnimatedHeadline({
   return (
     <span className="word-split-container">
       {words.map((word, i) => (
-        <span 
-          key={i} 
+        <span
+          key={i}
           className={`word ${glow ? "text-glow" : ""}`}
           style={{ animationDelay: `${delay + i * 80}ms` }}
         >
-          {word}{i < words.length - 1 ? "\u00A0" : ""}
+          {word}
+          {i < words.length - 1 ? "\u00A0" : ""}
         </span>
       ))}
     </span>
@@ -323,7 +331,9 @@ function AnimatedHeadline({
 /* Count-up when scrolled into view. Preserves suffix like "+", "/7", "H+". */
 function CountUp({ target, className = "" }: { target: string; className?: string }) {
   const ref = useRef<HTMLDivElement | null>(null);
-  const [display, setDisplay] = useState<string>(() => target.replace(/[0-9,]/g, (m) => (m === "," ? "" : "0")));
+  const [display, setDisplay] = useState<string>(() =>
+    target.replace(/[0-9,]/g, (m) => (m === "," ? "" : "0")),
+  );
   const reduced = useReducedMotion();
 
   useEffect(() => {
@@ -370,7 +380,11 @@ function CountUp({ target, className = "" }: { target: string; className?: strin
     return () => io.disconnect();
   }, [target, reduced]);
 
-  return <div ref={ref} className={className}>{display}</div>;
+  return (
+    <div ref={ref} className={className}>
+      {display}
+    </div>
+  );
 }
 
 /* ---------- Data ---------- */
@@ -391,16 +405,50 @@ const agentThumbs = [
 ];
 
 const features = [
-  { title: "Ship campaigns end to end", body: "Your team is buried in briefs and dashboards. Enrich agents research, write, publish, and optimize across every channel — so campaigns actually ship, on time, on brand.", animation: "ecommerce" as const },
-  { title: "Grow like a pro", body: "Enrich agents plan keywords, generate content, launch ads, and send emails on autopilot. Personalize at scale, run experiments in bulk, and know exactly what's working.", animation: "marketing" as const },
-  { title: "Protect your brand", body: "Every agent learns your voice, guidelines, and offers from a central knowledge base. Stay consistent across blogs, ads, email, and social — without micromanaging every asset.", animation: "security" as const },
-  { title: "Stay in control", body: "One workspace for every campaign, agent, and metric. Approve work, edit outputs, and track ROI in real time — with humans in the loop wherever it matters.", animation: "dashboard" as const },
+  {
+    title: "Ship campaigns end to end",
+    body: "Your team is buried in briefs and dashboards. Enrich agents research, write, publish, and optimize across every channel — so campaigns actually ship, on time, on brand.",
+    animation: "ecommerce" as const,
+  },
+  {
+    title: "Grow like a pro",
+    body: "Enrich agents plan keywords, generate content, launch ads, and send emails on autopilot. Personalize at scale, run experiments in bulk, and know exactly what's working.",
+    animation: "marketing" as const,
+  },
+  {
+    title: "Protect your brand",
+    body: "Every agent learns your voice, guidelines, and offers from a central knowledge base. Stay consistent across blogs, ads, email, and social — without micromanaging every asset.",
+    animation: "security" as const,
+  },
+  {
+    title: "Stay in control",
+    body: "One workspace for every campaign, agent, and metric. Approve work, edit outputs, and track ROI in real time — with humans in the loop wherever it matters.",
+    animation: "dashboard" as const,
+  },
 ];
 
 const steps = [
-  { n: "01", title: "Gather", tagline: "Continuous research", body: "Kai listens across social, search, and communities. Sam tracks keywords and competitors. Your agents surface opportunities before your team even opens a dashboard.", animation: "marketing" as const },
-  { n: "02", title: "Execute", tagline: "Autonomous execution", body: "Helena writes blogs, ads, and landing pages. Angela drafts and sends email campaigns. Everything ships to your CMS, ad accounts, and ESP — with your review when you want it.", animation: "automation" as const },
-  { n: "03", title: "Analyze", tagline: "Insights that loop back", body: "Live dashboards track ROI, traffic, and revenue across channels. Results feed straight back into the next brief, so every campaign compounds on the last.", animation: "analytics" as const },
+  {
+    n: "01",
+    title: "Gather",
+    tagline: "Continuous research",
+    body: "Kai listens across social, search, and communities. Sam tracks keywords and competitors. Your agents surface opportunities before your team even opens a dashboard.",
+    animation: "marketing" as const,
+  },
+  {
+    n: "02",
+    title: "Execute",
+    tagline: "Autonomous execution",
+    body: "Helena writes blogs, ads, and landing pages. Angela drafts and sends email campaigns. Everything ships to your CMS, ad accounts, and ESP — with your review when you want it.",
+    animation: "automation" as const,
+  },
+  {
+    n: "03",
+    title: "Analyze",
+    tagline: "Insights that loop back",
+    body: "Live dashboards track ROI, traffic, and revenue across channels. Results feed straight back into the next brief, so every campaign compounds on the last.",
+    animation: "analytics" as const,
+  },
 ];
 
 const agents = [
@@ -411,11 +459,35 @@ const agents = [
 ];
 
 const testimonials = [
-  { quote: "Enrich has doubled our content output without expanding the team. It's like hiring a full marketing pod overnight.", name: "Jane Doe", role: "Marketing Director" },
-  { quote: "Our campaigns run themselves. Enrich feels like our entire marketing department — at a fraction of the cost.", name: "John Smith", role: "CEO" },
-  { quote: "Helena writes better first drafts than most agencies we've hired. We just review, tweak, and ship.", name: "Priya Natarajan", role: "Head of Growth" },
-  { quote: "The moment we plugged in our brand voice, every output started sounding like us. That was the unlock.", name: "Marco Álvarez", role: "VP Marketing" },
-  { quote: "This is what an AI marketing team should feel like.", name: "Sara Chen", role: "Founder" },
+  {
+    quote:
+      "Enrich has doubled our content output without expanding the team. It's like hiring a full marketing pod overnight.",
+    name: "Jane Doe",
+    role: "Marketing Director",
+  },
+  {
+    quote:
+      "Our campaigns run themselves. Enrich feels like our entire marketing department — at a fraction of the cost.",
+    name: "John Smith",
+    role: "CEO",
+  },
+  {
+    quote:
+      "Helena writes better first drafts than most agencies we've hired. We just review, tweak, and ship.",
+    name: "Priya Natarajan",
+    role: "Head of Growth",
+  },
+  {
+    quote:
+      "The moment we plugged in our brand voice, every output started sounding like us. That was the unlock.",
+    name: "Marco Álvarez",
+    role: "VP Marketing",
+  },
+  {
+    quote: "This is what an AI marketing team should feel like.",
+    name: "Sara Chen",
+    role: "Founder",
+  },
 ];
 
 /* ---------- Sections ---------- */
@@ -433,10 +505,14 @@ function Nav() {
   return (
     <header
       className={`sticky top-0 z-50 backdrop-blur-xl border-b transition-all duration-300 ${
-        scrolled ? "bg-background/80 border-border shadow-[0_8px_24px_-12px_rgba(0,0,0,0.4)]" : "bg-background/40 border-transparent"
+        scrolled
+          ? "bg-background/80 border-border shadow-[0_8px_24px_-12px_rgba(0,0,0,0.4)]"
+          : "bg-background/40 border-transparent"
       }`}
     >
-      <div className={`mx-auto max-w-7xl px-6 flex items-center justify-between gap-4 transition-all duration-300 ${scrolled ? "h-14" : "h-16"}`}>
+      <div
+        className={`mx-auto max-w-7xl px-6 flex items-center justify-between gap-4 transition-all duration-300 ${scrolled ? "h-14" : "h-16"}`}
+      >
         <a href="#" className="flex items-center gap-2 font-black text-lg">
           <span className="grid place-items-center w-7 h-7 rounded-md bg-gradient-brand shadow-glow">
             {/* STEP 8: Teal icon hover on logo icon */}
@@ -446,23 +522,45 @@ function Nav() {
         </a>
         <nav className="hidden md:flex items-center gap-1 text-sm">
           {items.map((i) => (
-            <a key={i} href="#" className="px-3 py-2 rounded-full text-foreground/80 hover:text-foreground hover:bg-white/5 transition">{i}</a>
+            <a
+              key={i}
+              href="#"
+              className="px-3 py-2 rounded-full text-foreground/80 hover:text-foreground hover:bg-white/5 transition"
+            >
+              {i}
+            </a>
           ))}
         </nav>
         <div className="flex items-center gap-2">
-          <a href="#" className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-white/10 hover:bg-white/15 px-4 py-2 text-sm font-medium transition btn-lift">
+          <a
+            href="#"
+            className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-white/10 hover:bg-white/15 px-4 py-2 text-sm font-medium transition btn-lift"
+          >
             Login <ArrowRight className="w-3.5 h-3.5" />
           </a>
-          <a href="#" className="inline-flex items-center rounded-full bg-lime px-4 py-2 text-sm font-semibold text-[oklch(0.2_0.05_285)] hover:brightness-95 transition btn-lift">
+          <a
+            href="#"
+            className="inline-flex items-center rounded-full bg-lime px-4 py-2 text-sm font-semibold text-[oklch(0.2_0.05_285)] hover:brightness-95 transition btn-lift"
+          >
             Get Started
           </a>
           {/* STEP 8: Teal icon hover on menu button */}
-          <button className="md:hidden p-2 icon-hover" onClick={() => setOpen(!open)} aria-label="Menu"><Menu className="w-5 h-5" /></button>
+          <button
+            className="md:hidden p-2 icon-hover"
+            onClick={() => setOpen(!open)}
+            aria-label="Menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
         </div>
       </div>
       {open && (
         <div className="md:hidden border-t border-border px-6 py-4 flex flex-col gap-2">
-          {items.map((i) => <a key={i} href="#" className="py-2 text-sm">{i}</a>)}
+          {items.map((i) => (
+            <a key={i} href="#" className="py-2 text-sm">
+              {i}
+            </a>
+          ))}
         </div>
       )}
     </header>
@@ -474,8 +572,13 @@ function AnnouncementBar() {
     <div className="bg-brand-soft text-[oklch(0.2_0.05_285)] text-sm">
       <div className="mx-auto max-w-7xl px-6 py-2.5 flex items-center justify-center gap-2 text-center">
         <span className="font-semibold">Introducing Helena 2.0:</span>
-        <span className="hidden sm:inline">A smarter AI marketer that writes, publishes, and optimizes autonomously.</span>
-        <a href="#" className="inline-flex items-center gap-1 font-semibold underline underline-offset-2">
+        <span className="hidden sm:inline">
+          A smarter AI marketer that writes, publishes, and optimizes autonomously.
+        </span>
+        <a
+          href="#"
+          className="inline-flex items-center gap-1 font-semibold underline underline-offset-2"
+        >
           See what's new <ArrowRight className="w-3.5 h-3.5" />
         </a>
       </div>
@@ -493,14 +596,14 @@ function MeshBackdrop({ intensity = 1 }: { intensity?: number }) {
   // Scroll-linked parallax for orbs - different multipliers for depth
   useEffect(() => {
     if (reduced) return;
-    
+
     const onScroll = () => {
       const y = window.scrollY;
       if (orb1Ref.current) orb1Ref.current.style.transform = `translateY(${y * 0.15}px)`;
       if (orb2Ref.current) orb2Ref.current.style.transform = `translateY(${y * 0.1}px)`;
       if (orb3Ref.current) orb3Ref.current.style.transform = `translateY(${y * 0.2}px)`;
     };
-    
+
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, [reduced]);
@@ -510,17 +613,28 @@ function MeshBackdrop({ intensity = 1 }: { intensity?: number }) {
       <div
         ref={orb1Ref}
         className="absolute -top-24 -left-24 w-[55%] h-[70%] rounded-full blur-3xl animate-mesh"
-        style={{ background: "radial-gradient(circle, oklch(0.65 0.22 295 / 0.55) 0%, transparent 70%)", opacity: 0.9 * intensity }}
+        style={{
+          background: "radial-gradient(circle, oklch(0.65 0.22 295 / 0.55) 0%, transparent 70%)",
+          opacity: 0.9 * intensity,
+        }}
       />
       <div
         ref={orb2Ref}
         className="absolute top-1/3 -right-32 w-[55%] h-[70%] rounded-full blur-3xl animate-mesh-2"
-        style={{ background: "radial-gradient(circle, oklch(0.72 0.2 320 / 0.5) 0%, transparent 70%)", opacity: 0.85 * intensity, animationDelay: "-6s" }}
+        style={{
+          background: "radial-gradient(circle, oklch(0.72 0.2 320 / 0.5) 0%, transparent 70%)",
+          opacity: 0.85 * intensity,
+          animationDelay: "-6s",
+        }}
       />
       <div
         ref={orb3Ref}
         className="absolute bottom-0 left-1/3 w-[45%] h-[55%] rounded-full blur-3xl animate-mesh"
-        style={{ background: "radial-gradient(circle, oklch(0.55 0.25 285 / 0.45) 0%, transparent 70%)", opacity: 0.8 * intensity, animationDelay: "-10s" }}
+        style={{
+          background: "radial-gradient(circle, oklch(0.55 0.25 285 / 0.45) 0%, transparent 70%)",
+          opacity: 0.8 * intensity,
+          animationDelay: "-10s",
+        }}
       />
       <div className="absolute inset-0 bg-noise mix-blend-overlay opacity-30" />
     </div>
@@ -531,19 +645,32 @@ function MeshBackdrop({ intensity = 1 }: { intensity?: number }) {
 function MobileHeroCanvas() {
   return (
     <div className="relative aspect-[4/3] rounded-3xl overflow-hidden border border-white/10 shadow-glow bg-[oklch(0.14_0.05_285)]">
-      <img src={heroDash} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover opacity-70" />
+      <img
+        src={heroDash}
+        alt=""
+        loading="lazy"
+        className="absolute inset-0 w-full h-full object-cover opacity-70"
+      />
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/20 to-background/60" />
       <div
         className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] rounded-full blur-3xl animate-orb"
-        style={{ background: "radial-gradient(circle, oklch(0.7 0.25 295 / 0.7) 0%, transparent 70%)" }}
+        style={{
+          background: "radial-gradient(circle, oklch(0.7 0.25 295 / 0.7) 0%, transparent 70%)",
+        }}
       />
       <div
         className="absolute bottom-[-15%] right-[-10%] w-[70%] h-[70%] rounded-full blur-3xl animate-orb"
-        style={{ background: "radial-gradient(circle, oklch(0.72 0.2 320 / 0.6) 0%, transparent 70%)", animationDelay: "-5s" }}
+        style={{
+          background: "radial-gradient(circle, oklch(0.72 0.2 320 / 0.6) 0%, transparent 70%)",
+          animationDelay: "-5s",
+        }}
       />
       <div
         className="absolute top-[30%] right-[20%] w-[40%] h-[40%] rounded-full blur-3xl animate-orb"
-        style={{ background: "radial-gradient(circle, oklch(0.65 0.22 260 / 0.55) 0%, transparent 70%)", animationDelay: "-9s" }}
+        style={{
+          background: "radial-gradient(circle, oklch(0.65 0.22 260 / 0.55) 0%, transparent 70%)",
+          animationDelay: "-9s",
+        }}
       />
       <div className="absolute bottom-4 left-4 flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md px-3 py-1.5 text-xs font-semibold border border-white/20">
         <span className="w-1.5 h-1.5 rounded-full bg-lime animate-pulse" />
@@ -566,9 +693,9 @@ function Hero() {
     setIsMobile(mq.matches);
     const cb = () => setIsMobile(mq.matches);
     mq.addEventListener("change", cb);
-    
+
     // Mouse parallax tracking
-    const handleMouseMove = (e: MouseEvent) => {
+    const handleMouseMove = (e: globalThis.MouseEvent) => {
       if (!heroRef.current) return;
       const rect = heroRef.current.getBoundingClientRect();
       const centerX = rect.width / 2;
@@ -580,9 +707,9 @@ function Hero() {
         y: (mouseY / centerY) * 20,
       });
     };
-    
+
     heroRef.current?.addEventListener("mousemove", handleMouseMove);
-    
+
     return () => {
       mq.removeEventListener("change", cb);
       heroRef.current?.removeEventListener("mousemove", handleMouseMove);
@@ -608,9 +735,9 @@ function Hero() {
           <HeroWorkspace mouseOffset={mouseOffset} />
         </div>
       )}
-      
+
       {/* Subtle gradient overlay for text legibility - NOT cinematic, just functional */}
-      <div 
+      <div
         className="absolute inset-0 z-[1] pointer-events-none"
         style={{
           background: `
@@ -621,7 +748,7 @@ function Hero() {
               oklch(0.11 0.02 285 / 0.5) 70%,
               oklch(0.11 0.02 285 / 0.75) 100%
             )
-          `
+          `,
         }}
       />
 
@@ -680,7 +807,7 @@ function Hero() {
           <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10">
             {integrationIcons.map((icon, i) => (
               <Reveal key={icon.slug} delay={i * 60}>
-                <div 
+                <div
                   className="flex items-center justify-center w-14 h-14 rounded-full bg-white/10 backdrop-blur-sm transition-opacity hover:opacity-100 opacity-70 cursor-pointer"
                   aria-label={icon.label}
                   style={{
@@ -695,7 +822,7 @@ function Hero() {
           </div>
         </div>
       </div>
-      
+
       {/* Minimal CSS for breathing animation */}
       <style>{`
         @keyframes gentle-breathe {
@@ -712,7 +839,9 @@ function AgentsMarquee() {
   const row1 = agentThumbs.slice(0, 6);
   const row2 = agentThumbs.slice(6, 12);
   const Card = ({ t }: { t: (typeof agentThumbs)[number] }) => (
-    <div className={`shrink-0 w-[280px] sm:w-[340px] aspect-video rounded-2xl ${t.tone} p-6 flex flex-col justify-between shadow-lg snap-start`}>
+    <div
+      className={`shrink-0 w-[280px] sm:w-[340px] aspect-video rounded-2xl ${t.tone} p-6 flex flex-col justify-between shadow-lg snap-start`}
+    >
       <div className="text-xs font-bold tracking-widest opacity-70">AGENT</div>
       <div className="text-2xl font-black tracking-tight">{t.title}</div>
     </div>
@@ -721,13 +850,16 @@ function AgentsMarquee() {
     <section className="py-28 md:py-32 bg-background">
       <Reveal>
         <div className="mx-auto max-w-4xl px-6 mb-14 text-center">
-          <p className="text-xs sm:text-sm font-bold tracking-[0.28em] text-brand-soft">WHY ENRICH</p>
+          <p className="text-xs sm:text-sm font-bold tracking-[0.28em] text-brand-soft">
+            WHY ENRICH
+          </p>
           {/* Section title with character splitting and underline */}
           <h2 className="section-title mt-4 text-4xl sm:text-5xl md:text-6xl font-black tracking-tight leading-[1.02] text-balance">
             <Reveal className="inline">A complete marketing operating system</Reveal>
           </h2>
           <p className="mt-5 text-base md:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
-            Everything your team needs to plan, execute, and analyze campaigns — powered by AI specialists that actually do the work.
+            Everything your team needs to plan, execute, and analyze campaigns — powered by AI
+            specialists that actually do the work.
           </p>
         </div>
       </Reveal>
@@ -735,24 +867,32 @@ function AgentsMarquee() {
       {reduced ? (
         /* Static grid fallback for prefers-reduced-motion */
         <div className="mx-auto max-w-7xl px-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {agentThumbs.map((t) => <Card key={t.title} t={t} />)}
+          {agentThumbs.map((t) => (
+            <Card key={t.title} t={t} />
+          ))}
         </div>
       ) : (
         <>
           {/* Mobile: swipeable snap carousel with peeking next card */}
           <div className="md:hidden overflow-x-auto snap-x snap-mandatory px-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             <div className="flex gap-4 pb-2 w-max pr-[20%]">
-              {agentThumbs.map((t) => <Card key={t.title} t={t} />)}
+              {agentThumbs.map((t) => (
+                <Card key={t.title} t={t} />
+              ))}
             </div>
           </div>
 
           {/* Desktop: two-row marquee, pauses on hover */}
           <div className="hidden md:block space-y-6 overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_8%,black_92%,transparent)]">
             <div className="flex w-max gap-6 animate-marquee-left marquee-track">
-              {[...row1, ...row1].map((t, idx) => <Card key={`r1-${idx}`} t={t} />)}
+              {[...row1, ...row1].map((t, idx) => (
+                <Card key={`r1-${idx}`} t={t} />
+              ))}
             </div>
             <div className="flex w-max gap-6 animate-marquee-right marquee-track">
-              {[...row2, ...row2].map((t, idx) => <Card key={`r2-${idx}`} t={t} />)}
+              {[...row2, ...row2].map((t, idx) => (
+                <Card key={`r2-${idx}`} t={t} />
+              ))}
             </div>
           </div>
         </>
@@ -765,7 +905,10 @@ function FeatureCard({ f, i }: { f: (typeof features)[number]; i: number }) {
   const tiltRef = useTilt(6);
   return (
     <Reveal delay={(i % 2) * 80}>
-      <div ref={tiltRef} className="tilt-card group relative overflow-hidden rounded-3xl border border-border bg-card p-8 md:p-10 hover:border-brand/50 transition-colors h-full">
+      <div
+        ref={tiltRef}
+        className="tilt-card group relative overflow-hidden rounded-3xl border border-border bg-card p-8 md:p-10 hover:border-brand/50 transition-colors h-full"
+      >
         <div className="flex items-center gap-3 text-sm text-muted-foreground">
           <span className="grid place-items-center w-8 h-8 rounded-lg bg-brand/20 text-brand-soft">
             <Check className="w-4 h-4" />
@@ -787,10 +930,7 @@ function Features() {
     <section className="py-24 bg-background">
       <div className="mx-auto max-w-7xl px-6 grid md:grid-cols-2 lg:grid-cols-12 gap-6">
         {features.map((f, i) => (
-          <div 
-            key={f.title} 
-            className={i % 2 === 0 ? "lg:col-span-7" : "lg:col-span-5"}
-          >
+          <div key={f.title} className={i % 2 === 0 ? "lg:col-span-7" : "lg:col-span-5"}>
             <FeatureCard f={f} i={i} />
           </div>
         ))}
@@ -806,7 +946,10 @@ function Stats() {
     { value: "∞", label: "Scales with your team — from startup to enterprise." },
   ];
   return (
-    <section className="relative overflow-hidden py-24 bg-gradient-stats divider-top-angled" style={{ boxShadow: 'var(--border-glow-stats)' }}>
+    <section
+      className="relative overflow-hidden py-24 bg-gradient-stats divider-top-angled"
+      style={{ boxShadow: "var(--border-glow-stats)" }}
+    >
       <MeshBackdrop intensity={0.7} />
       <div className="relative mx-auto max-w-6xl px-6">
         <Reveal>
@@ -820,7 +963,10 @@ function Stats() {
             <Reveal key={s.value} delay={i * 80}>
               <div className="border-t border-white/20 pt-6">
                 {/* Amber accent with glow on stat numbers */}
-                <CountUp target={s.value} className="text-6xl md:text-7xl font-black tracking-tight text-accent-amber text-glow" />
+                <CountUp
+                  target={s.value}
+                  className="text-6xl md:text-7xl font-black tracking-tight text-accent-amber text-glow"
+                />
                 <p className="mt-4 text-muted-foreground max-w-xs">{s.label}</p>
               </div>
             </Reveal>
@@ -875,8 +1021,12 @@ function HowTo() {
   return (
     <section className="relative py-28 md:py-32 bg-background overflow-hidden">
       {/* Layered atmospheric background */}
-      <AtmosphericBackground gridRef={gridRef} gradientRef={gradientRef} particlesRef={particlesRef} />
-      
+      <AtmosphericBackground
+        gridRef={gridRef}
+        gradientRef={gradientRef}
+        particlesRef={particlesRef}
+      />
+
       <div className="relative mx-auto max-w-7xl px-6">
         <Reveal>
           <div className="max-w-3xl">
@@ -885,7 +1035,8 @@ function HowTo() {
               <Reveal className="inline">Your autonomous marketing workflow</Reveal>
             </h2>
             <p className="mt-6 text-lg md:text-xl text-muted-foreground leading-relaxed">
-              Enrich specialists work together in real time — research feeds content, content fuels campaigns, and insights inform the next brief.
+              Enrich specialists work together in real time — research feeds content, content fuels
+              campaigns, and insights inform the next brief.
             </p>
           </div>
         </Reveal>
@@ -899,24 +1050,26 @@ function HowTo() {
               return (
                 <div
                   key={s.n}
-                  ref={(el) => { itemRefs.current[i] = el; }}
+                  ref={(el) => {
+                    itemRefs.current[i] = el;
+                  }}
                   className="group relative transition-all duration-500 ease-out"
-                  style={{ 
+                  style={{
                     opacity: isActive ? 1 : 0.35,
-                    transform: isActive ? "translateX(0)" : "translateX(-8px)"
+                    transform: isActive ? "translateX(0)" : "translateX(-8px)",
                   }}
                 >
                   {/* Active indicator bar */}
-                  <div 
+                  <div
                     className="absolute -left-4 top-0 bottom-0 w-1 rounded-full transition-all duration-500 ease-out"
                     style={{
-                      background: isActive 
-                        ? "linear-gradient(180deg, var(--brand) 0%, var(--brand-soft) 100%)" 
+                      background: isActive
+                        ? "linear-gradient(180deg, var(--brand) 0%, var(--brand-soft) 100%)"
                         : "transparent",
                       boxShadow: isActive ? "0 0 20px oklch(0.65 0.22 295 / 0.6)" : "none",
                     }}
                   />
-                  
+
                   {/* Mobile preview */}
                   <div className="md:hidden mb-6 relative aspect-[4/3] rounded-2xl overflow-hidden border border-border bg-gradient-to-br from-brand/40 via-brand-deep to-background shadow-glow flex items-center justify-center">
                     <LottieAnimation type={s.animation} size={160} />
@@ -934,25 +1087,27 @@ function HowTo() {
                           width: isActive ? 14 : 10,
                           height: isActive ? 14 : 10,
                           background: isActive ? "var(--brand)" : "var(--muted-foreground)",
-                          boxShadow: isActive 
-                            ? "0 0 0 4px oklch(0.65 0.22 295 / 0.2), 0 0 24px oklch(0.65 0.22 295 / 0.5)" 
+                          boxShadow: isActive
+                            ? "0 0 0 4px oklch(0.65 0.22 295 / 0.2), 0 0 24px oklch(0.65 0.22 295 / 0.5)"
                             : "none",
                         }}
                       />
                       {/* Pulse ring for active state */}
                       {isActive && (
-                        <span 
+                        <span
                           className="absolute inset-0 rounded-full animate-ping opacity-30"
-                          style={{ 
+                          style={{
                             background: "var(--brand)",
-                            animationDuration: "2s"
+                            animationDuration: "2s",
                           }}
                         />
                       )}
                     </div>
-                    
+
                     <div className="min-w-0">
-                      <span className="text-xs text-muted-foreground font-mono tracking-widest">({s.n})</span>
+                      <span className="text-xs text-muted-foreground font-mono tracking-widest">
+                        ({s.n})
+                      </span>
                       <h3
                         className="mt-2 font-black tracking-tight leading-[0.95] transition-all duration-500"
                         style={{
@@ -963,20 +1118,20 @@ function HowTo() {
                       >
                         {s.title}
                       </h3>
-                      <p 
+                      <p
                         className="mt-3 font-semibold text-base md:text-lg transition-all duration-500"
-                        style={{ 
+                        style={{
                           color: isActive ? "var(--brand-soft)" : "var(--muted-foreground)",
-                          opacity: isActive ? 1 : 0.7
+                          opacity: isActive ? 1 : 0.7,
                         }}
                       >
                         {s.tagline}
                       </p>
-                      <p 
+                      <p
                         className="mt-2 leading-relaxed max-w-md text-[0.95rem] md:text-base transition-all duration-500"
-                        style={{ 
+                        style={{
                           color: isActive ? "var(--muted-foreground)" : "var(--muted-foreground)",
-                          opacity: isActive ? 1 : 0.5
+                          opacity: isActive ? 1 : 0.5,
                         }}
                       >
                         {s.body}
@@ -994,29 +1149,31 @@ function HowTo() {
               {/* Modern card with glass effect */}
               <div className="relative rounded-3xl overflow-hidden">
                 {/* Outer glow ring */}
-                <div 
+                <div
                   className="absolute -inset-1 rounded-[1.4rem] transition-opacity duration-700"
                   style={{
-                    background: "linear-gradient(135deg, oklch(0.72 0.2 300 / 0.4), oklch(0.65 0.22 295 / 0.2), oklch(0.75 0.14 190 / 0.3))",
+                    background:
+                      "linear-gradient(135deg, oklch(0.72 0.2 300 / 0.4), oklch(0.65 0.22 295 / 0.2), oklch(0.75 0.14 190 / 0.3))",
                     opacity: 0.6,
                     filter: "blur(1px)",
                   }}
                 />
-                
+
                 {/* Main card */}
                 <div className="relative aspect-[4/5] max-h-[75vh] rounded-[1.2rem] bg-gradient-to-br from-brand/30 via-brand-deep/80 to-background border border-border/50 overflow-hidden shadow-[0_25px_80px_-20px_rgba(0,0,0,0.6)]">
                   {/* Animated background gradient */}
-                  <div 
+                  <div
                     className="absolute inset-0 transition-all duration-1000 ease-out"
                     style={{
-                      background: active === 0 
-                        ? "radial-gradient(ellipse at 30% 40%, oklch(0.65 0.22 295 / 0.3) 0%, transparent 60%)"
-                        : active === 1
-                        ? "radial-gradient(ellipse at 70% 30%, oklch(0.72 0.2 300 / 0.3) 0%, transparent 60%)"
-                        : "radial-gradient(ellipse at 50% 60%, oklch(0.75 0.14 190 / 0.3) 0%, transparent 60%)",
+                      background:
+                        active === 0
+                          ? "radial-gradient(ellipse at 30% 40%, oklch(0.65 0.22 295 / 0.3) 0%, transparent 60%)"
+                          : active === 1
+                            ? "radial-gradient(ellipse at 70% 30%, oklch(0.72 0.2 300 / 0.3) 0%, transparent 60%)"
+                            : "radial-gradient(ellipse at 50% 60%, oklch(0.75 0.14 190 / 0.3) 0%, transparent 60%)",
                     }}
                   />
-                  
+
                   {/* Image transitions with cross-fade and slide */}
                   {steps.map((s, i) => (
                     <div
@@ -1024,11 +1181,12 @@ function HowTo() {
                       className="absolute inset-0 transition-all duration-700 ease-out"
                       style={{
                         opacity: i === active ? 1 : 0,
-                        transform: i === active 
-                          ? "translateY(0) scale(1)" 
-                          : i > active 
-                            ? "translateY(20px) scale(1.02)" 
-                            : "translateY(-20px) scale(1.02)",
+                        transform:
+                          i === active
+                            ? "translateY(0) scale(1)"
+                            : i > active
+                              ? "translateY(20px) scale(1.02)"
+                              : "translateY(-20px) scale(1.02)",
                         pointerEvents: i === active ? "auto" : "none",
                       }}
                     >
@@ -1037,10 +1195,10 @@ function HowTo() {
                       </div>
                     </div>
                   ))}
-                  
+
                   {/* Overlay gradient */}
                   <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent pointer-events-none" />
-                  
+
                   {/* Top indicator */}
                   <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
                     <div className="flex items-center gap-2 rounded-full bg-black/30 backdrop-blur-md px-3 py-1.5 text-xs font-semibold border border-white/10">
@@ -1051,7 +1209,7 @@ function HowTo() {
                       {steps[active].title}
                     </div>
                   </div>
-                  
+
                   {/* Bottom content */}
                   <div className="absolute bottom-0 left-0 right-0 p-6">
                     <div className="backdrop-blur-md bg-black/30 rounded-2xl p-4 border border-white/10">
@@ -1059,7 +1217,7 @@ function HowTo() {
                       <p className="text-sm text-white/70 mt-1">{steps[active].tagline}</p>
                     </div>
                   </div>
-                  
+
                   {/* Progress dots */}
                   <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2">
                     {steps.map((_, i) => (
@@ -1068,12 +1226,11 @@ function HowTo() {
                         className="h-1.5 rounded-full transition-all duration-500 ease-out"
                         style={{
                           width: i === active ? 32 : 8,
-                          background: i === active 
-                            ? "linear-gradient(90deg, var(--brand), var(--brand-soft))" 
-                            : "rgba(255,255,255,0.3)",
-                          boxShadow: i === active 
-                            ? "0 0 12px oklch(0.65 0.22 295 / 0.6)" 
-                            : "none",
+                          background:
+                            i === active
+                              ? "linear-gradient(90deg, var(--brand), var(--brand-soft))"
+                              : "rgba(255,255,255,0.3)",
+                          boxShadow: i === active ? "0 0 12px oklch(0.65 0.22 295 / 0.6)" : "none",
                         }}
                       />
                     ))}
@@ -1093,9 +1250,17 @@ function AgentCard({ a, i }: { a: (typeof agents)[number]; i: number }) {
   return (
     <Reveal delay={i * 80}>
       {/* STEP 6: Agent card with hover glow */}
-      <div ref={tiltRef} className="agent-card tilt-card group rounded-3xl overflow-hidden border border-border bg-card hover:border-brand/50 transition-colors">
+      <div
+        ref={tiltRef}
+        className="agent-card tilt-card group rounded-3xl overflow-hidden border border-border bg-card hover:border-brand/50 transition-colors"
+      >
         <div className="aspect-square overflow-hidden">
-          <img src={a.img} alt={`${a.name} — ${a.role}`} loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+          <img
+            src={a.img}
+            alt={`${a.name} — ${a.role}`}
+            loading="lazy"
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          />
         </div>
         <div className="p-5">
           <div className="text-xl font-black">{a.name}</div>
@@ -1123,10 +1288,7 @@ function MeetTeam() {
         </Reveal>
         <div className="mt-16 grid sm:grid-cols-2 lg:grid-cols-12 gap-6">
           {agents.map((a, i) => (
-            <div 
-              key={a.name} 
-              className={i % 2 === 0 ? "lg:col-span-7" : "lg:col-span-5"}
-            >
+            <div key={a.name} className={i % 2 === 0 ? "lg:col-span-7" : "lg:col-span-5"}>
               <AgentCard a={a} i={i} />
             </div>
           ))}
@@ -1150,8 +1312,14 @@ function Testimonials() {
           {testimonials.map((t, i) => (
             <Reveal key={t.name} delay={(i % 3) * 80} from="left">
               <figure className="relative rounded-3xl border border-border bg-card p-8 pl-10 flex flex-col justify-between min-h-[280px] h-full">
-                <span aria-hidden className="absolute left-0 top-6 bottom-6 w-[3px] rounded-full bg-gradient-to-b from-brand-soft via-brand to-brand-deep" />
-                <blockquote className="text-lg italic leading-relaxed font-medium text-foreground/95" style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
+                <span
+                  aria-hidden
+                  className="absolute left-0 top-6 bottom-6 w-[3px] rounded-full bg-gradient-to-b from-brand-soft via-brand to-brand-deep"
+                />
+                <blockquote
+                  className="text-lg italic leading-relaxed font-medium text-foreground/95"
+                  style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
+                >
                   {t.quote}
                 </blockquote>
                 <figcaption className="mt-8 not-italic">
@@ -1174,20 +1342,19 @@ function Integrations() {
 
   // Intersection observer for pausing animations
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsVisible(entry.isIntersecting),
-      { threshold: 0.3 }
-    );
-    
+    const observer = new IntersectionObserver(([entry]) => setIsVisible(entry.isIntersecting), {
+      threshold: 0.3,
+    });
+
     if (wrapRef.current) {
       observer.observe(wrapRef.current);
     }
-    
+
     return () => observer.disconnect();
   }, []);
 
   // Subtle parallax on mouse move
-  const handleMouseMove = useCallback((e: MouseEvent) => {
+  const handleMouseMove = useCallback((e: ReactMouseEvent<HTMLElement>) => {
     if (!wrapRef.current) return;
     const rect = wrapRef.current.getBoundingClientRect();
     const centerX = rect.width / 2;
@@ -1213,15 +1380,25 @@ function Integrations() {
       {/* Premium integration ecosystem visualization */}
       <div className="relative mx-auto max-w-4xl px-6 text-center">
         <Reveal>
-          <div className="inline-flex items-center gap-3 rounded-md px-4 py-2 text-sm text-[oklch(0.8_0.02_285)]" style={{ background: "transparent", boxShadow: "inset 0 0 0 1px oklch(0.55 0.22 295 / 0.35)" }}>
-            <a href="#" className="inline-flex items-center gap-1 font-bold text-[oklch(0.75_0.15_295)] hover:gap-2 transition-all">
+          <div
+            className="inline-flex items-center gap-3 rounded-md px-4 py-2 text-sm text-[oklch(0.8_0.02_285)]"
+            style={{
+              background: "transparent",
+              boxShadow: "inset 0 0 0 1px oklch(0.55 0.22 295 / 0.35)",
+            }}
+          >
+            <a
+              href="#"
+              className="inline-flex items-center gap-1 font-bold text-[oklch(0.75_0.15_295)] hover:gap-2 transition-all"
+            >
               Register your interest <ArrowRight className="w-3.5 h-3.5" />
             </a>
           </div>
         </Reveal>
         <Reveal delay={80}>
           <h2 className="mt-10 font-black tracking-tight leading-[1.02] text-balance text-4xl sm:text-5xl md:text-6xl">
-            Weave Enrich into your<br className="hidden sm:block" /> existing workflow
+            Weave Enrich into your
+            <br className="hidden sm:block" /> existing workflow
           </h2>
         </Reveal>
       </div>
@@ -1232,14 +1409,16 @@ function Integrations() {
       </div>
 
       <div className="relative text-center mt-8">
-        <a href="#" className="inline-flex items-center gap-1.5 font-bold text-[oklch(0.8_0.02_285)]">
+        <a
+          href="#"
+          className="inline-flex items-center gap-1.5 font-bold text-[oklch(0.8_0.02_285)]"
+        >
           Explore integrations <ArrowRight className="w-4 h-4" />
         </a>
       </div>
     </section>
   );
 }
-
 
 function CTA() {
   return (
@@ -1255,11 +1434,17 @@ function CTA() {
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-3">
             {/* Primary CTA - lime accent for action */}
-            <a href="#" className="inline-flex items-center gap-2 rounded-full bg-accent-warm px-6 py-3 font-semibold text-[oklch(0.2_0.05_285)] btn-lift neon-border">
+            <a
+              href="#"
+              className="inline-flex items-center gap-2 rounded-full bg-accent-warm px-6 py-3 font-semibold text-[oklch(0.2_0.05_285)] btn-lift neon-border"
+            >
               Get Started — It's Free <ArrowRight className="w-4 h-4" />
             </a>
             {/* Secondary button - teal for less emphasis */}
-            <a href="#" className="inline-flex items-center gap-2 rounded-full bg-white/10 hover:bg-white/15 px-6 py-3 font-semibold transition btn-lift neon-border-teal">
+            <a
+              href="#"
+              className="inline-flex items-center gap-2 rounded-full bg-white/10 hover:bg-white/15 px-6 py-3 font-semibold transition btn-lift neon-border-teal"
+            >
               Book a Demo
             </a>
           </div>
@@ -1271,8 +1456,20 @@ function CTA() {
 
 function Footer() {
   const cols = {
-    Agents: ["Helena — Digital Marketer", "Sam — SEO / GEO Manager", "Kai — Social Listening", "Angela — Email Marketer", "All agents"],
-    Solutions: ["Startups & SMBs", "Digital Agencies", "E-commerce Brands", "Global Enterprises", "Marketing Teams"],
+    Agents: [
+      "Helena — Digital Marketer",
+      "Sam — SEO / GEO Manager",
+      "Kai — Social Listening",
+      "Angela — Email Marketer",
+      "All agents",
+    ],
+    Solutions: [
+      "Startups & SMBs",
+      "Digital Agencies",
+      "E-commerce Brands",
+      "Global Enterprises",
+      "Marketing Teams",
+    ],
     Resources: ["Blog", "Case Studies", "Help Center", "Docs", "Changelog"],
     Company: ["About", "Careers", "Press", "Legal", "Contact"],
   };
@@ -1287,14 +1484,23 @@ function Footer() {
               </span>
               Enrich Labs
             </div>
-            <p className="mt-4 text-sm text-muted-foreground">The AI marketing operating system for modern teams.</p>
+            <p className="mt-4 text-sm text-muted-foreground">
+              The AI marketing operating system for modern teams.
+            </p>
           </div>
           {Object.entries(cols).map(([title, items]) => (
             <div key={title}>
               <div className="text-sm font-semibold mb-4">{title}</div>
               <ul className="space-y-2">
                 {items.map((i) => (
-                  <li key={i}><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition">{i}</a></li>
+                  <li key={i}>
+                    <a
+                      href="#"
+                      className="text-sm text-muted-foreground hover:text-foreground transition"
+                    >
+                      {i}
+                    </a>
+                  </li>
                 ))}
               </ul>
             </div>
@@ -1303,9 +1509,15 @@ function Footer() {
         <div className="mt-16 pt-8 border-t border-border flex flex-wrap items-center justify-between gap-4 text-sm text-muted-foreground">
           <div>© {new Date().getFullYear()} Enrich Labs, Inc.</div>
           <div className="flex gap-6">
-            <a href="#" className="hover:text-foreground">Privacy</a>
-            <a href="#" className="hover:text-foreground">Terms</a>
-            <a href="#" className="hover:text-foreground">Security</a>
+            <a href="#" className="hover:text-foreground">
+              Privacy
+            </a>
+            <a href="#" className="hover:text-foreground">
+              Terms
+            </a>
+            <a href="#" className="hover:text-foreground">
+              Security
+            </a>
           </div>
         </div>
       </div>

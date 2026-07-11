@@ -7,7 +7,8 @@ interface StepConnectorProps {
 
 export function StepConnector({ steps, activeStep }: StepConnectorProps) {
   const pathRef = useRef<SVGPathElement>(null);
-  const reduced = typeof window !== 'undefined' && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const reduced =
+    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   useEffect(() => {
     const path = pathRef.current;
@@ -41,7 +42,7 @@ export function StepConnector({ steps, activeStep }: StepConnectorProps) {
         strokeLinecap="round"
         fill="none"
         style={{
-          transition: 'stroke-dashoffset 1.2s ease-out',
+          transition: "stroke-dashoffset 1.2s ease-out",
         }}
       />
     </svg>
