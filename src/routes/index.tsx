@@ -11,15 +11,40 @@ import heroVideo from "@/assets/hero.mp4.asset.json";
 import enrichMark from "@/assets/enrich-mark.png.asset.json";
 import featContent from "@/assets/feature-content.jpg";
 import featAds from "@/assets/feature-ads.jpg";
-import featBrand from "@/assets/feature-brand.jpg";
+import featBrandGuidelines from "@/assets/feature-brand-guidelines.jpg";
+import featControlWorkflow from "@/assets/feature-control-workflow.jpg";
 import featAnalytics from "@/assets/feature-analytics.jpg";
 
 export const Route = createFileRoute("/")({
   component: Index,
 });
 
-/* Scroll-reveal hook — adds .is-visible when element enters viewport */
-function Reveal({ children, delay = 0, className = "" }: { children: ReactNode; delay?: number; className?: string }) {
+/* ---------- Utility hooks ---------- */
+
+function useReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduced(mq.matches);
+    const cb = () => setReduced(mq.matches);
+    mq.addEventListener("change", cb);
+    return () => mq.removeEventListener("change", cb);
+  }, []);
+  return reduced;
+}
+
+/* Scroll-reveal with staggered delay via IntersectionObserver at 15% visibility */
+function Reveal({
+  children,
+  delay = 0,
+  className = "",
+  from = "up",
+}: {
+  children: ReactNode;
+  delay?: number;
+  className?: string;
+  from?: "up" | "left";
+}) {
   const ref = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     const el = ref.current;
@@ -31,17 +56,98 @@ function Reveal({ children, delay = 0, className = "" }: { children: ReactNode; 
           io.unobserve(el);
         }
       },
-      { threshold: 0.15, rootMargin: "0px 0px -60px 0px" },
+      { threshold: 0.15, rootMargin: "0px 0px -40px 0px" },
     );
     io.observe(el);
     return () => io.disconnect();
   }, []);
+  const base = from === "left" ? "reveal-from-left" : "reveal-on-scroll";
   return (
-    <div ref={ref} className={`reveal-on-scroll ${className}`} style={{ transitionDelay: `${delay}ms` }}>
+    <div ref={ref} className={`${base} ${className}`} style={{ transitionDelay: `${delay}ms` }}>
       {children}
     </div>
   );
 }
+
+/* Magnetic tilt for cards — max ~7deg, spring-ish return via CSS transition */
+function useTilt(max = 7) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let raf = 0;
+    const onMove = (e: MouseEvent) => {
+      const r = el.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - 0.5;
+      const y = (e.clientY - r.top) / r.height - 0.5;
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        el.style.transform = `perspective(900px) rotateX(${-y * max}deg) rotateY(${x * max}deg) translateZ(0)`;
+      });
+    };
+    const onLeave = () => {
+      if (raf) cancelAnimationFrame(raf);
+      el.style.transform = "perspective(900px) rotateX(0deg) rotateY(0deg)";
+    };
+    el.addEventListener("mousemove", onMove);
+    el.addEventListener("mouseleave", onLeave);
+    return () => {
+      el.removeEventListener("mousemove", onMove);
+      el.removeEventListener("mouseleave", onLeave);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [max]);
+  return ref;
+}
+
+/* Count-up when scrolled into view. Preserves suffix like "+", "/7", "H+". */
+function CountUp({ target, className = "" }: { target: string; className?: string }) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [display, setDisplay] = useState<string>(() => target.replace(/[0-9,]/g, (m) => (m === "," ? "" : "0")));
+  const reduced = useReducedMotion();
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (reduced) {
+      setDisplay(target);
+      return;
+    }
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        io.unobserve(el);
+        const match = target.match(/^([\d,]+)(.*)$/) || target.match(/^(\d+)(\/\d+)$/);
+        if (!match) {
+          setDisplay(target);
+          return;
+        }
+        const numStr = match[1].replace(/,/g, "");
+        const end = parseInt(numStr, 10);
+        const suffix = target.slice(match[1].length);
+        const duration = 1400;
+        const start = performance.now();
+        const easeOutExpo = (t: number) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t));
+        const tick = (now: number) => {
+          const t = Math.min(1, (now - start) / duration);
+          const v = Math.round(end * easeOutExpo(t));
+          const withCommas = v.toLocaleString();
+          setDisplay(`${withCommas}${suffix}`);
+          if (t < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      },
+      { threshold: 0.4 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [target, reduced]);
+
+  return <div ref={ref} className={className}>{display}</div>;
+}
+
+/* ---------- Data ---------- */
 
 const agentThumbs = [
   { title: "Helena — Digital Marketer", tone: "bg-[oklch(0.85_0.08_80)] text-[oklch(0.2_0.1_60)]" },
@@ -63,8 +169,8 @@ const logos = ["Acme Corp", "Shop&Save", "Northwind", "Lumen", "BrightPath", "Va
 const features = [
   { title: "Ship campaigns end to end", body: "Your team is buried in briefs and dashboards. Enrich agents research, write, publish, and optimize across every channel — so campaigns actually ship, on time, on brand.", img: featContent },
   { title: "Grow like a pro", body: "Enrich agents plan keywords, generate content, launch ads, and send emails on autopilot. Personalize at scale, run experiments in bulk, and know exactly what's working.", img: featAds },
-  { title: "Protect your brand", body: "Every agent learns your voice, guidelines, and offers from a central knowledge base. Stay consistent across blogs, ads, email, and social — without micromanaging every asset.", img: featBrand },
-  { title: "Stay in control", body: "One workspace for every campaign, agent, and metric. Approve work, edit outputs, and track ROI in real time — with humans in the loop wherever it matters.", img: featAnalytics },
+  { title: "Protect your brand", body: "Every agent learns your voice, guidelines, and offers from a central knowledge base. Stay consistent across blogs, ads, email, and social — without micromanaging every asset.", img: featBrandGuidelines },
+  { title: "Stay in control", body: "One workspace for every campaign, agent, and metric. Approve work, edit outputs, and track ROI in real time — with humans in the loop wherever it matters.", img: featControlWorkflow },
 ];
 
 const steps = [
@@ -88,12 +194,25 @@ const testimonials = [
   { quote: "This is what an AI marketing team should feel like.", name: "Sara Chen", role: "Founder", company: "BrightPath" },
 ];
 
+/* ---------- Sections ---------- */
+
 function Nav() {
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const items = ["Agents", "Solutions", "Resources", "Pricing", "Blog"];
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 100);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/50 border-b border-border">
-      <div className="mx-auto max-w-7xl px-6 h-16 flex items-center justify-between gap-4">
+    <header
+      className={`sticky top-0 z-50 backdrop-blur-xl border-b transition-all duration-300 ${
+        scrolled ? "bg-background/80 border-border shadow-[0_8px_24px_-12px_rgba(0,0,0,0.4)]" : "bg-background/40 border-transparent"
+      }`}
+    >
+      <div className={`mx-auto max-w-7xl px-6 flex items-center justify-between gap-4 transition-all duration-300 ${scrolled ? "h-14" : "h-16"}`}>
         <a href="#" className="flex items-center gap-2 font-black text-lg">
           <span className="grid place-items-center w-7 h-7 rounded-md bg-gradient-brand shadow-glow">
             <Sparkles className="w-4 h-4 text-white" />
@@ -106,13 +225,13 @@ function Nav() {
           ))}
         </nav>
         <div className="flex items-center gap-2">
-          <a href="#" className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-white/10 hover:bg-white/15 px-4 py-2 text-sm font-medium transition">
+          <a href="#" className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-white/10 hover:bg-white/15 px-4 py-2 text-sm font-medium transition btn-lift">
             Login <ArrowRight className="w-3.5 h-3.5" />
           </a>
-          <a href="#" className="inline-flex items-center rounded-full bg-lime px-4 py-2 text-sm font-semibold text-[oklch(0.2_0.05_285)] hover:brightness-95 transition">
+          <a href="#" className="inline-flex items-center rounded-full bg-lime px-4 py-2 text-sm font-semibold text-[oklch(0.2_0.05_285)] hover:brightness-95 transition btn-lift">
             Get Started
           </a>
-          <button className="md:hidden p-2" onClick={() => setOpen(!open)}><Menu className="w-5 h-5" /></button>
+          <button className="md:hidden p-2" onClick={() => setOpen(!open)} aria-label="Menu"><Menu className="w-5 h-5" /></button>
         </div>
       </div>
       {open && (
@@ -138,10 +257,67 @@ function AnnouncementBar() {
   );
 }
 
+/* Animated gradient mesh backdrop — soft orbs drifting behind hero/stats */
+function MeshBackdrop({ intensity = 1 }: { intensity?: number }) {
+  return (
+    <div aria-hidden className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div
+        className="absolute -top-24 -left-24 w-[55%] h-[70%] rounded-full blur-3xl animate-mesh"
+        style={{ background: "radial-gradient(circle, oklch(0.65 0.22 295 / 0.55) 0%, transparent 70%)", opacity: 0.9 * intensity }}
+      />
+      <div
+        className="absolute top-1/3 -right-32 w-[55%] h-[70%] rounded-full blur-3xl animate-mesh-2"
+        style={{ background: "radial-gradient(circle, oklch(0.72 0.2 320 / 0.5) 0%, transparent 70%)", opacity: 0.85 * intensity, animationDelay: "-6s" }}
+      />
+      <div
+        className="absolute bottom-0 left-1/3 w-[45%] h-[55%] rounded-full blur-3xl animate-mesh"
+        style={{ background: "radial-gradient(circle, oklch(0.55 0.25 285 / 0.45) 0%, transparent 70%)", opacity: 0.8 * intensity, animationDelay: "-10s" }}
+      />
+      <div className="absolute inset-0 bg-noise mix-blend-overlay opacity-30" />
+    </div>
+  );
+}
+
+/* Mobile-only lightweight animated background (no video) */
+function MobileHeroCanvas() {
+  return (
+    <div className="relative aspect-[4/3] rounded-3xl overflow-hidden border border-white/10 shadow-glow bg-[oklch(0.14_0.05_285)]">
+      <img src={heroDash} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover opacity-70" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/20 to-background/60" />
+      <div
+        className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] rounded-full blur-3xl animate-orb"
+        style={{ background: "radial-gradient(circle, oklch(0.7 0.25 295 / 0.7) 0%, transparent 70%)" }}
+      />
+      <div
+        className="absolute bottom-[-15%] right-[-10%] w-[70%] h-[70%] rounded-full blur-3xl animate-orb"
+        style={{ background: "radial-gradient(circle, oklch(0.72 0.2 320 / 0.6) 0%, transparent 70%)", animationDelay: "-5s" }}
+      />
+      <div
+        className="absolute top-[30%] right-[20%] w-[40%] h-[40%] rounded-full blur-3xl animate-orb"
+        style={{ background: "radial-gradient(circle, oklch(0.65 0.22 260 / 0.55) 0%, transparent 70%)", animationDelay: "-9s" }}
+      />
+      <div className="absolute bottom-4 left-4 flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md px-3 py-1.5 text-xs font-semibold border border-white/20">
+        <span className="w-1.5 h-1.5 rounded-full bg-lime animate-pulse" />
+        Agents working
+      </div>
+    </div>
+  );
+}
+
 function Hero() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    setIsMobile(mq.matches);
+    const cb = () => setIsMobile(mq.matches);
+    mq.addEventListener("change", cb);
+    return () => mq.removeEventListener("change", cb);
+  }, []);
+
   return (
     <section className="relative overflow-hidden bg-gradient-hero">
-      <div className="absolute inset-0 opacity-40 pointer-events-none">
+      <MeshBackdrop />
+      <div className="absolute inset-0 opacity-30 pointer-events-none">
         <div className="absolute -top-8 -left-10 w-64 h-40 rounded-2xl bg-[oklch(0.85_0.08_80)] rotate-[-8deg] animate-float" />
         <div className="absolute top-24 right-8 w-72 h-44 rounded-2xl bg-[oklch(0.3_0.15_20)] rotate-[6deg] animate-float" style={{ animationDelay: "1s" }} />
         <div className="absolute bottom-20 left-12 w-56 h-36 rounded-2xl bg-[oklch(0.55_0.2_25)] rotate-[10deg] animate-float" style={{ animationDelay: "2s" }} />
@@ -170,7 +346,7 @@ function Hero() {
                   <Shuffle className="w-4 h-4" /> Briefs
                 </button>
               </div>
-              <button className="inline-flex items-center gap-2 rounded-full bg-gradient-brand px-4 py-2 text-sm font-semibold text-white">
+              <button className="inline-flex items-center gap-2 rounded-full bg-gradient-brand px-4 py-2 text-sm font-semibold text-white btn-lift">
                 Launch <ArrowUp className="w-4 h-4" />
               </button>
             </div>
@@ -180,39 +356,46 @@ function Hero() {
           </p>
         </div>
 
-        {/* Hero product visual — autoplaying loop, muted */}
+        {/* Hero product visual — video on desktop, animated canvas on mobile */}
         <Reveal delay={200} className="mt-16">
-          <div className="relative mx-auto max-w-5xl rounded-3xl border border-white/10 overflow-hidden shadow-glow bg-black">
-            <video
-              src={heroVideo.url}
-              poster={heroDash}
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="metadata"
-              aria-label="Enrich Labs AI marketing dashboard in motion"
-              className="w-full h-auto block"
-            />
-            {/* Cover bottom-right watermark from source video */}
-            <div
-              aria-hidden
-              className="absolute bottom-0 right-0 pointer-events-none"
-              style={{
-                width: "9%",
-                height: "12%",
-                background:
-                  "radial-gradient(ellipse at center, oklch(0.08 0.03 285) 55%, oklch(0.08 0.03 285 / 0.85) 78%, transparent 100%)",
-              }}
-            />
-          </div>
+          {isMobile ? (
+            <div className="mx-auto max-w-5xl">
+              <MobileHeroCanvas />
+            </div>
+          ) : (
+            <div className="relative mx-auto max-w-5xl rounded-3xl border border-white/10 overflow-hidden shadow-glow bg-black">
+              <video
+                src={heroVideo.url}
+                poster={heroDash}
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                aria-label="Enrich Labs AI marketing dashboard in motion"
+                className="w-full h-auto block"
+              />
+              <div
+                aria-hidden
+                className="absolute bottom-0 right-0 pointer-events-none"
+                style={{
+                  width: "9%",
+                  height: "12%",
+                  background:
+                    "radial-gradient(ellipse at center, oklch(0.08 0.03 285) 55%, oklch(0.08 0.03 285 / 0.85) 78%, transparent 100%)",
+                }}
+              />
+            </div>
+          )}
         </Reveal>
       </div>
 
       <div className="relative border-t border-white/10">
         <div className="mx-auto max-w-7xl px-6 py-10 flex flex-wrap items-center justify-center gap-x-12 gap-y-6 opacity-80">
-          {logos.map((l) => (
-            <span key={l} className="text-lg font-bold tracking-wide text-white/70">{l}</span>
+          {logos.map((l, i) => (
+            <Reveal key={l} delay={i * 60}>
+              <span className="text-lg font-bold tracking-wide text-white/70">{l}</span>
+            </Reveal>
           ))}
         </div>
       </div>
@@ -221,10 +404,11 @@ function Hero() {
 }
 
 function AgentsMarquee() {
+  const reduced = useReducedMotion();
   const row1 = agentThumbs.slice(0, 6);
   const row2 = agentThumbs.slice(6, 12);
   const Card = ({ t }: { t: (typeof agentThumbs)[number] }) => (
-    <div className={`shrink-0 w-[280px] sm:w-[340px] aspect-video rounded-2xl ${t.tone} p-6 flex flex-col justify-between shadow-lg`}>
+    <div className={`shrink-0 w-[280px] sm:w-[340px] aspect-video rounded-2xl ${t.tone} p-6 flex flex-col justify-between shadow-lg snap-start`}>
       <div className="text-xs font-bold tracking-widest opacity-70">AGENT</div>
       <div className="text-2xl font-black tracking-tight">{t.title}</div>
     </div>
@@ -243,15 +427,53 @@ function AgentsMarquee() {
         </div>
       </Reveal>
 
-      <div className="space-y-6 overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_8%,black_92%,transparent)]">
-        <div className="flex w-max gap-6 animate-marquee-left">
-          {[...row1, ...row1].map((t, idx) => <Card key={`r1-${idx}`} t={t} />)}
+      {reduced ? (
+        /* Static grid fallback for prefers-reduced-motion */
+        <div className="mx-auto max-w-7xl px-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {agentThumbs.map((t) => <Card key={t.title} t={t} />)}
         </div>
-        <div className="flex w-max gap-6 animate-marquee-right">
-          {[...row2, ...row2].map((t, idx) => <Card key={`r2-${idx}`} t={t} />)}
+      ) : (
+        <>
+          {/* Mobile: swipeable snap carousel with peeking next card */}
+          <div className="md:hidden overflow-x-auto snap-x snap-mandatory px-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex gap-4 pb-2 w-max pr-[20%]">
+              {agentThumbs.map((t) => <Card key={t.title} t={t} />)}
+            </div>
+          </div>
+
+          {/* Desktop: two-row marquee, pauses on hover */}
+          <div className="hidden md:block space-y-6 overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_8%,black_92%,transparent)]">
+            <div className="flex w-max gap-6 animate-marquee-left marquee-track">
+              {[...row1, ...row1].map((t, idx) => <Card key={`r1-${idx}`} t={t} />)}
+            </div>
+            <div className="flex w-max gap-6 animate-marquee-right marquee-track">
+              {[...row2, ...row2].map((t, idx) => <Card key={`r2-${idx}`} t={t} />)}
+            </div>
+          </div>
+        </>
+      )}
+    </section>
+  );
+}
+
+function FeatureCard({ f, i }: { f: (typeof features)[number]; i: number }) {
+  const tiltRef = useTilt(6);
+  return (
+    <Reveal delay={(i % 2) * 80}>
+      <div ref={tiltRef} className="tilt-card group relative overflow-hidden rounded-3xl border border-border bg-card p-8 md:p-10 hover:border-brand/50 transition-colors h-full">
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          <span className="grid place-items-center w-8 h-8 rounded-lg bg-brand/20 text-brand-soft">
+            <Check className="w-4 h-4" />
+          </span>
+          <span>0{i + 1}</span>
+        </div>
+        <h3 className="mt-6 text-3xl md:text-4xl font-black tracking-tight">{f.title}</h3>
+        <p className="mt-4 text-muted-foreground leading-relaxed">{f.body}</p>
+        <div className="mt-8 aspect-[16/10] rounded-2xl overflow-hidden border border-border">
+          <img src={f.img} alt={f.title} loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
         </div>
       </div>
-    </section>
+    </Reveal>
   );
 }
 
@@ -259,23 +481,7 @@ function Features() {
   return (
     <section className="py-24 bg-background">
       <div className="mx-auto max-w-7xl px-6 grid md:grid-cols-2 gap-6">
-        {features.map((f, i) => (
-          <Reveal key={f.title} delay={(i % 2) * 120}>
-            <div className="group relative overflow-hidden rounded-3xl border border-border bg-card p-8 md:p-10 hover:border-brand/50 transition h-full">
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <span className="grid place-items-center w-8 h-8 rounded-lg bg-brand/20 text-brand-soft">
-                  <Check className="w-4 h-4" />
-                </span>
-                <span>0{i + 1}</span>
-              </div>
-              <h3 className="mt-6 text-3xl md:text-4xl font-black tracking-tight">{f.title}</h3>
-              <p className="mt-4 text-muted-foreground leading-relaxed">{f.body}</p>
-              <div className="mt-8 aspect-[16/10] rounded-2xl overflow-hidden border border-border">
-                <img src={f.img} alt={f.title} loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-              </div>
-            </div>
-          </Reveal>
-        ))}
+        {features.map((f, i) => <FeatureCard key={f.title} f={f} i={i} />)}
       </div>
     </section>
   );
@@ -288,8 +494,9 @@ function Stats() {
     { value: "10H+", label: "On average, marketing teams save over 10 hours every week." },
   ];
   return (
-    <section className="py-24 bg-gradient-hero">
-      <div className="mx-auto max-w-6xl px-6">
+    <section className="relative overflow-hidden py-24 bg-gradient-hero">
+      <MeshBackdrop intensity={0.7} />
+      <div className="relative mx-auto max-w-6xl px-6">
         <Reveal>
           <p className="text-xs font-bold tracking-[0.2em] text-brand-soft">THE PAYOFF</p>
           <h2 className="mt-3 text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-balance max-w-4xl">
@@ -298,9 +505,9 @@ function Stats() {
         </Reveal>
         <div className="mt-16 grid sm:grid-cols-3 gap-8">
           {stats.map((s, i) => (
-            <Reveal key={s.value} delay={i * 120}>
+            <Reveal key={s.value} delay={i * 80}>
               <div className="border-t border-white/20 pt-6">
-                <div className="text-6xl md:text-7xl font-black tracking-tight">{s.value}</div>
+                <CountUp target={s.value} className="text-6xl md:text-7xl font-black tracking-tight" />
                 <p className="mt-4 text-muted-foreground max-w-xs">{s.label}</p>
               </div>
             </Reveal>
@@ -311,9 +518,7 @@ function Stats() {
   );
 }
 
-/* HOW IT WORKS — sticky scroll motion cloned from pitch.com "Why Pitch" section.
-   Left column: stacked steps; the one closest to viewport center is "active".
-   Right column: a sticky panel whose image cross-fades to the active step. */
+/* HOW IT WORKS — sticky scroll motion */
 function HowTo() {
   const itemRefs = useRef<Array<HTMLDivElement | null>>([]);
   const [active, setActive] = useState(0);
@@ -371,7 +576,6 @@ function HowTo() {
         </Reveal>
 
         <div className="mt-16 md:mt-24 grid md:grid-cols-2 gap-12 md:gap-20 items-start">
-          {/* LEFT — scrolling step list */}
           <div className="space-y-16 md:space-y-[55vh] md:pt-[22vh] md:pb-[22vh]">
             {steps.map((s, i) => {
               const isActive = i === active;
@@ -380,11 +584,8 @@ function HowTo() {
                   key={s.n}
                   ref={(el) => { itemRefs.current[i] = el; }}
                   className="transition-all duration-700 ease-out"
-                  style={{
-                    opacity: isActive ? 1 : 0.4,
-                  }}
+                  style={{ opacity: isActive ? 1 : 0.4 }}
                 >
-                  {/* Mobile: inline image per step. Desktop: hidden (sticky panel handles visuals). */}
                   <div className="md:hidden mb-6 relative aspect-[4/3] rounded-2xl overflow-hidden border border-border bg-gradient-to-br from-brand/40 via-brand-deep to-background shadow-glow">
                     <img src={s.img} alt={`${s.title} — ${s.tagline}`} loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
@@ -422,7 +623,6 @@ function HowTo() {
             })}
           </div>
 
-          {/* RIGHT — sticky visual that swaps on active (desktop only) */}
           <div className="hidden md:block">
             <div className="sticky top-24">
               <div className="relative aspect-[4/5] max-h-[75vh] rounded-3xl bg-gradient-to-br from-brand/50 via-brand-deep to-background border border-border shadow-glow overflow-hidden">
@@ -465,6 +665,27 @@ function HowTo() {
   );
 }
 
+function AgentCard({ a, i }: { a: (typeof agents)[number]; i: number }) {
+  const tiltRef = useTilt(7);
+  return (
+    <Reveal delay={i * 80}>
+      <div ref={tiltRef} className="tilt-card group rounded-3xl overflow-hidden border border-border bg-card hover:border-brand/50 transition-colors">
+        <div className="aspect-square overflow-hidden">
+          <img src={a.img} alt={`${a.name} — ${a.role}`} loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+        </div>
+        <div className="p-5">
+          <div className="text-xl font-black">{a.name}</div>
+          <div className="text-sm text-muted-foreground">{a.role}</div>
+          <div className="mt-4 flex items-center gap-2 text-xs text-brand-soft">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-lime animate-pulse" />
+            {a.status}
+          </div>
+        </div>
+      </div>
+    </Reveal>
+  );
+}
+
 function MeetTeam() {
   return (
     <section className="py-24 bg-background border-t border-border">
@@ -476,23 +697,7 @@ function MeetTeam() {
           </h2>
         </Reveal>
         <div className="mt-16 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {agents.map((a, i) => (
-            <Reveal key={a.name} delay={i * 100}>
-              <div className="group rounded-3xl overflow-hidden border border-border bg-card hover:border-brand/50 transition">
-                <div className="aspect-square overflow-hidden">
-                  <img src={a.img} alt={`${a.name} — ${a.role}`} loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                </div>
-                <div className="p-5">
-                  <div className="text-xl font-black">{a.name}</div>
-                  <div className="text-sm text-muted-foreground">{a.role}</div>
-                  <div className="mt-4 flex items-center gap-2 text-xs text-brand-soft">
-                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-lime animate-pulse" />
-                    {a.status}
-                  </div>
-                </div>
-              </div>
-            </Reveal>
-          ))}
+          {agents.map((a, i) => <AgentCard key={a.name} a={a} i={i} />)}
         </div>
       </div>
     </section>
@@ -510,13 +715,13 @@ function Testimonials() {
         </Reveal>
         <div className="mt-16 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {testimonials.map((t, i) => (
-            <Reveal key={i} delay={(i % 3) * 100}>
-              <figure className="rounded-3xl border border-border bg-card p-8 flex flex-col justify-between min-h-[280px] h-full">
-                <div>
-                  <div className="text-5xl font-black text-brand-soft leading-none">"</div>
-                  <blockquote className="mt-3 text-lg leading-snug">{t.quote}</blockquote>
-                </div>
-                <figcaption className="mt-8">
+            <Reveal key={i} delay={(i % 3) * 80} from="left">
+              <figure className="relative rounded-3xl border border-border bg-card p-8 pl-10 flex flex-col justify-between min-h-[280px] h-full">
+                <span aria-hidden className="absolute left-0 top-6 bottom-6 w-[3px] rounded-full bg-gradient-to-b from-brand-soft via-brand to-brand-deep" />
+                <blockquote className="text-lg italic leading-relaxed font-medium text-foreground/95" style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
+                  {t.quote}
+                </blockquote>
+                <figcaption className="mt-8 not-italic">
                   <div className="font-semibold">{t.name}</div>
                   <div className="text-sm text-muted-foreground">{t.role}, {t.company}</div>
                 </figcaption>
@@ -529,12 +734,9 @@ function Testimonials() {
   );
 }
 
-/* Integrations — pitch.com "Weave X into your workflow" clone.
-   Center brand pill (Enrich mark) with integration chips scattered on a soft gradient.
-   Chips gently float and drift on scroll for depth. */
 function Integrations() {
   const wrapRef = useRef<HTMLDivElement | null>(null);
-  const [p, setP] = useState(0); // -1 .. 1 based on section center vs viewport center
+  const [p, setP] = useState(0);
 
   useEffect(() => {
     let raf = 0;
@@ -560,7 +762,6 @@ function Integrations() {
     };
   }, []);
 
-  // Integration chips: label, brand color (bg), letter/initial
   const chips = [
     { label: "Slack", bg: "#fff", fg: "#611f69", letter: "#", x: "10%", y: "62%", size: 64, depth: 40, delay: 0 },
     { label: "Notion", bg: "#fff", fg: "#111", letter: "N", x: "22%", y: "34%", size: 56, depth: 60, delay: 0.6 },
@@ -597,7 +798,6 @@ function Integrations() {
         </Reveal>
       </div>
 
-      {/* Chip field */}
       <div className="relative mx-auto max-w-6xl mt-16 md:mt-20 h-[380px] md:h-[440px] px-6">
         {chips.map((c) => (
           <div
@@ -628,7 +828,6 @@ function Integrations() {
           </div>
         ))}
 
-        {/* Center Enrich brand pill */}
         <div
           className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
           style={{ transform: `translate(-50%, calc(-50% + ${p * -20}px))`, transition: "transform 200ms linear" }}
@@ -651,8 +850,9 @@ function Integrations() {
 
 function CTA() {
   return (
-    <section className="py-32 bg-gradient-hero">
-      <div className="mx-auto max-w-4xl px-6 text-center">
+    <section className="relative overflow-hidden py-32 bg-gradient-hero">
+      <MeshBackdrop intensity={0.6} />
+      <div className="relative mx-auto max-w-4xl px-6 text-center">
         <Reveal>
           <h2 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight text-balance">
             Meet your new marketing team.
@@ -661,10 +861,10 @@ function CTA() {
             Join thousands of teams growing faster with autonomous AI marketers.
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-3">
-            <a href="#" className="inline-flex items-center gap-2 rounded-full bg-lime px-6 py-3 font-semibold text-[oklch(0.2_0.05_285)]">
+            <a href="#" className="inline-flex items-center gap-2 rounded-full bg-lime px-6 py-3 font-semibold text-[oklch(0.2_0.05_285)] btn-lift">
               Get Started — It's Free <ArrowRight className="w-4 h-4" />
             </a>
-            <a href="#" className="inline-flex items-center gap-2 rounded-full bg-white/10 hover:bg-white/15 px-6 py-3 font-semibold transition">
+            <a href="#" className="inline-flex items-center gap-2 rounded-full bg-white/10 hover:bg-white/15 px-6 py-3 font-semibold transition btn-lift">
               Book a Demo
             </a>
           </div>
@@ -736,5 +936,4 @@ function Index() {
     </main>
   );
 }
-{/* Play icon kept available for potential future placeholders */}
 export const _iconRef = Play;
