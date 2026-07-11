@@ -1,6 +1,6 @@
 {
-  "buildCommand": "date > .build-timestamp && npm run build",
-  "outputDirectory": ".vercel/output/static",
+  "buildCommand": "npm run build",
+  "outputDirectory": "./dist",
   "installCommand": "npm install",
   "framework": null,
   "regions": ["iad1"],
