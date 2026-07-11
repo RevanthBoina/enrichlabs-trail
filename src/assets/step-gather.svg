@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" fill="none">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#1a0a2e"/>
+      <stop offset="100%" stop-color="#0d0618"/>
+    </radialGradient>
+    <radialGradient id="glow1" cx="30%" cy="40%" r="25%">
+      <stop offset="0%" stop-color="#a855f7" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#a855f7" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="70%" cy="60%" r="20%">
+      <stop offset="0%" stop-color="#7c3aed" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#7c3aed" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur">
+      <feGaussianBlur stdDeviation="2"/>
+    </filter>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="600" fill="url(#bgGrad)"/>
+  
+  <!-- Ambient glows -->
+  <ellipse cx="240" cy="240" rx="200" ry="150" fill="url(#glow1)"/>
+  <ellipse cx="560" cy="360" rx="160" ry="120" fill="url(#glow2)"/>
+  
+  <!-- Central radar/listening waveform rings -->
+  <g transform="translate(400, 300)" opacity="0.9">
+    <circle r="80" fill="none" stroke="#a855f7" stroke-width="1.5" opacity="0.3" filter="url(#blur)"/>
+    <circle r="120" fill="none" stroke="#9333ea" stroke-width="1" opacity="0.25" stroke-dasharray="8 12"/>
+    <circle r="160" fill="none" stroke="#7c3aed" stroke-width="1" opacity="0.2" stroke-dasharray="4 16"/>
+    <circle r="200" fill="none" stroke="#6d28d9" stroke-width="0.8" opacity="0.15" stroke-dasharray="2 20"/>
+  </g>
+  
+  <!-- Converging data signals - left -->
+  <g filter="url(#glow)">
+    <path d="M50 150 Q150 200 250 280 Q320 340 400 300" stroke="#c084fc" stroke-width="2" fill="none" opacity="0.8"/>
+    <circle cx="50" cy="150" r="4" fill="#e879f9"/>
+    <circle cx="250" cy="280" r="3" fill="#d946ef"/>
+  </g>
+  
+  <!-- Converging data signals - right -->
+  <g filter="url(#glow)">
+    <path d="M750 450 Q650 400 550 320 Q480 260 400 300" stroke="#c084fc" stroke-width="2" fill="none" opacity="0.8"/>
+    <circle cx="750" cy="450" r="4" fill="#e879f9"/>
+    <circle cx="550" cy="320" r="3" fill="#d946ef"/>
+  </g>
+  
+  <!-- Converging data signals - top -->
+  <g filter="url(#glow)">
+    <path d="M350 50 Q380 120 400 200 Q420 280 400 300" stroke="#a78bfa" stroke-width="1.5" fill="none" opacity="0.7"/>
+    <circle cx="350" cy="50" r="3" fill="#c4b5fd"/>
+  </g>
+  
+  <!-- Converging data signals - bottom -->
+  <g filter="url(#glow)">
+    <path d="M450 550 Q420 480 400 400 Q380 320 400 300" stroke="#a78bfa" stroke-width="1.5" fill="none" opacity="0.7"/>
+    <circle cx="450" cy="550" r="3" fill="#c4b5fd"/>
+  </g>
+  
+  <!-- Floating particles -->
+  <g opacity="0.6">
+    <circle cx="120" cy="200" r="2" fill="#e879f9" filter="url(#glow)"/>
+    <circle cx="680" cy="180" r="2.5" fill="#d946ef" filter="url(#glow)"/>
+    <circle cx="200" cy="450" r="2" fill="#c084fc" filter="url(#glow)"/>
+    <circle cx="600" cy="480" r="2" fill="#e879f9" filter="url(#glow)"/>
+    <circle cx="150" cy="350" r="1.5" fill="#a855f7" filter="url(#glow)"/>
+    <circle cx="650" cy="280" r="1.5" fill="#d946ef" filter="url(#glow)"/>
+    <circle cx="300" cy="120" r="2" fill="#c4b5fd" filter="url(#glow)"/>
+    <circle cx="500" cy="500" r="2" fill="#a78bfa" filter="url(#glow)"/>
+  </g>
+  
+  <!-- Center focal point -->
+  <circle cx="400" cy="300" r="12" fill="#a855f7" opacity="0.8" filter="url(#glow)"/>
+  <circle cx="400" cy="300" r="6" fill="#e879f9"/>
+  <circle cx="400" cy="300" r="2" fill="#fff"/>
+  
+  <!-- Grid overlay -->
+  <g opacity="0.05" stroke="#a855f7" stroke-width="0.5">
+    <line x1="0" y1="150" x2="800" y2="150"/>
+    <line x1="0" y1="300" x2="800" y2="300"/>
+    <line x1="0" y1="450" x2="800" y2="450"/>
+    <line x1="200" y1="0" x2="200" y2="600"/>
+    <line x1="400" y1="0" x2="400" y2="600"/>
+    <line x1="600" y1="0" x2="600" y2="600"/>
+  </g>
+</svg>
