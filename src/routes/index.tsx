@@ -10,6 +10,8 @@ import { IntegrationIcon, integrationColors } from "@/components/IntegrationIcon
 import { CustomCursor } from "@/components/CustomCursor";
 import { LottieAnimation } from "@/components/LottieAnimation";
 import { IntegrationEcosystem } from "@/components/IntegrationEcosystem";
+import { HeroWorkspace } from "@/components/HeroWorkspace";
+import { SimulatedPromptBar } from "@/components/SimulatedPromptBar";
 
 import helenaImg from "@/assets/agent-helena.jpg";
 import samImg from "@/assets/agent-sam.jpg";
@@ -540,10 +542,9 @@ function MobileHeroCanvas() {
 function Hero() {
   const [isMobile, setIsMobile] = useState<boolean | null>(null); // null = not mounted yet
   const [mounted, setMounted] = useState(false);
+  const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
   const reduced = useReducedMotion();
-  const gridRef = useRef<HTMLDivElement>(null);
-  const gradientRef = useRef<HTMLDivElement>(null);
-  const particlesRef = useRef<HTMLDivElement>(null);
+  const heroRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -551,13 +552,28 @@ function Hero() {
     setIsMobile(mq.matches);
     const cb = () => setIsMobile(mq.matches);
     mq.addEventListener("change", cb);
-    return () => mq.removeEventListener("change", cb);
+    
+    // Mouse parallax tracking
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!heroRef.current) return;
+      const rect = heroRef.current.getBoundingClientRect();
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const mouseX = e.clientX - rect.left - centerX;
+      const mouseY = e.clientY - rect.top - centerY;
+      setMouseOffset({
+        x: (mouseX / centerX) * 20,
+        y: (mouseY / centerY) * 20,
+      });
+    };
+    
+    heroRef.current?.addEventListener("mousemove", handleMouseMove);
+    
+    return () => {
+      mq.removeEventListener("change", cb);
+      heroRef.current?.removeEventListener("mousemove", handleMouseMove);
+    };
   }, []);
-
-  // Show video on desktop unless reduced motion is preferred
-  const showVideo = !isMobile && mounted && !reduced;
-  // Show atmospheric background only when NOT showing video (mobile or reduced motion)
-  const showAtmospheric = !showVideo;
 
   // Integration icons for trust bar
   const integrationIcons = [
@@ -571,43 +587,27 @@ function Hero() {
   ];
 
   return (
-    <section className="relative overflow-hidden bg-gradient-hero">
-      {/* STEP 3: Layered atmospheric background — only render when video is NOT showing */}
-      {showAtmospheric && <AtmosphericBackground gridRef={gridRef} gradientRef={gradientRef} particlesRef={particlesRef} />}
-      
-      {/* Full-bleed video background on desktop */}
-      {showVideo && (
-        <>
-          <div className="absolute inset-0 z-0">
-            <video
-              src={heroVideo.url}
-              poster={heroDash}
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="auto"
-              aria-label="Enrich Labs AI marketing dashboard in motion"
-              className="w-full h-full object-cover"
-            />
-          </div>
-          {/* Dark gradient scrim for text legibility */}
-          <div 
-            className="absolute inset-0 z-[1] pointer-events-none"
-            style={{
-              background: `
-                linear-gradient(
-                  to bottom,
-                  oklch(0.15 0.03 285 / 0.85) 0%,
-                  oklch(0.15 0.03 285 / 0.7) 30%,
-                  oklch(0.15 0.03 285 / 0.6) 60%,
-                  oklch(0.15 0.03 285 / 0.8) 100%
-                )
-              `
-            }}
-          />
-        </>
+    <section ref={heroRef} className="relative overflow-hidden bg-gradient-hero min-h-[120vh]">
+      {/* Cinematic Hero Workspace Background */}
+      {!reduced && (
+        <HeroWorkspace mouseOffset={mouseOffset} />
       )}
+      
+      {/* Dark overlay for text legibility */}
+      <div 
+        className="absolute inset-0 z-[1] pointer-events-none"
+        style={{
+          background: `
+            linear-gradient(
+              to bottom,
+              oklch(0.15 0.03 285 / 0.7) 0%,
+              oklch(0.15 0.03 285 / 0.6) 40%,
+              oklch(0.15 0.03 285 / 0.5) 70%,
+              oklch(0.15 0.03 285 / 0.7) 100%
+            )
+          `
+        }}
+      />
 
       <div className="relative z-10 mx-auto max-w-6xl px-6 pt-32 md:pt-40 pb-16 text-center">
         {/* Hero headline with word-split scale animation */}
@@ -617,27 +617,31 @@ function Hero() {
         </h1>
 
         <div className="mt-16 mx-auto max-w-2xl animate-reveal" style={{ animationDelay: "150ms" }}>
-          <div className="rounded-2xl bg-white p-4 shadow-glow text-left">
-            <input
-              type="text"
-              defaultValue="Launch a full-funnel campaign for our new product line"
-              className="w-full bg-transparent text-[oklch(0.3_0.05_285)] placeholder:text-[oklch(0.6_0.03_285)] outline-none text-base py-2"
-            />
-            <div className="mt-6 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <button className="grid place-items-center w-8 h-8 rounded-full bg-[oklch(0.95_0.02_285)] text-[oklch(0.3_0.05_285)] hover:bg-[oklch(0.9_0.03_285)]">
-                  <Plus className="w-4 h-4" />
-                </button>
-                <button className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-[oklch(0.4_0.1_290)] hover:bg-[oklch(0.95_0.05_290)]">
-                  <Shuffle className="w-4 h-4" /> Briefs
+          {/* Simulated Prompt Bar with real-time typing animation */}
+          {mounted && !reduced ? (
+            <SimulatedPromptBar />
+          ) : (
+            <div className="rounded-2xl bg-white p-4 shadow-glow text-left">
+              <input
+                type="text"
+                defaultValue="Launch a full-funnel campaign for our new product line"
+                className="w-full bg-transparent text-[oklch(0.3_0.05_285)] placeholder:text-[oklch(0.6_0.03_285)] outline-none text-base py-2"
+              />
+              <div className="mt-6 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <button className="grid place-items-center w-8 h-8 rounded-full bg-[oklch(0.95_0.02_285)] text-[oklch(0.3_0.05_285)] hover:bg-[oklch(0.9_0.03_285)]">
+                    <Plus className="w-4 h-4" />
+                  </button>
+                  <button className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-[oklch(0.4_0.1_290)] hover:bg-[oklch(0.95_0.05_290)]">
+                    <Shuffle className="w-4 h-4" /> Briefs
+                  </button>
+                </div>
+                <button className="inline-flex items-center gap-2 rounded-full bg-gradient-brand px-4 py-2 text-sm font-semibold text-white btn-lift neon-border">
+                  Launch <ArrowUp className="w-4 h-4" />
                 </button>
               </div>
-              {/* STEP 4: Neon border on primary CTA */}
-              <button className="inline-flex items-center gap-2 rounded-full bg-gradient-brand px-4 py-2 text-sm font-semibold text-white btn-lift neon-border">
-                Launch <ArrowUp className="w-4 h-4" />
-              </button>
             </div>
-          </div>
+          )}
           <p className="mt-8 text-lg text-white/90">
             From brief to launch, Enrich agents run your marketing 24/7 — autonomously.
           </p>
@@ -653,17 +657,19 @@ function Hero() {
         )}
       </div>
 
-      {/* Integration icons marquee */}
-      <div className="relative z-10 border-t border-white/10 overflow-hidden">
-        <div className="mx-auto max-w-7xl px-6 py-8">
+      {/* Integration icons marquee with orbital animation */}
+      <div className="relative z-10 border-t border-white/10 overflow-hidden py-8">
+        <div className="mx-auto max-w-7xl px-6">
           <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10">
             {integrationIcons.map((icon, i) => (
               <Reveal key={icon.slug} delay={i * 60}>
                 <div 
-                  className="flex items-center justify-center w-14 h-14 rounded-full bg-white/10 backdrop-blur-sm"
+                  className="flex items-center justify-center w-14 h-14 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 hover:scale-110 transition-all cursor-pointer group"
                   aria-label={icon.label}
                 >
                   <IntegrationIcon slug={icon.slug} size={28} />
+                  {/* Glow effect on hover */}
+                  <div className="absolute inset-0 rounded-full bg-brand/20 opacity-0 group-hover:opacity-100 blur-xl transition-opacity" />
                 </div>
               </Reveal>
             ))}
