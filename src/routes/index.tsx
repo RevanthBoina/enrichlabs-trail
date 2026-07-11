@@ -9,6 +9,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { IntegrationIcon, integrationColors } from "@/components/IntegrationIcon";
 import { CustomCursor } from "@/components/CustomCursor";
 import { LottieAnimation } from "@/components/LottieAnimation";
+import { IntegrationEcosystem } from "@/components/IntegrationEcosystem";
 
 import helenaImg from "@/assets/agent-helena.jpg";
 import samImg from "@/assets/agent-sam.jpg";
@@ -1135,42 +1136,6 @@ function Testimonials() {
 
 function Integrations() {
   const wrapRef = useRef<HTMLDivElement | null>(null);
-  const [p, setP] = useState(0);
-
-  useEffect(() => {
-    let raf = 0;
-    const update = () => {
-      const el = wrapRef.current;
-      if (!el) return;
-      const r = el.getBoundingClientRect();
-      const mid = r.top + r.height / 2;
-      const vhMid = window.innerHeight / 2;
-      const raw = (vhMid - mid) / (window.innerHeight);
-      setP(Math.max(-1, Math.min(1, raw)));
-    };
-    const onScroll = () => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => { raf = 0; update(); });
-    };
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", update);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", update);
-    };
-  }, []);
-
-  const chips = [
-    { label: "Intercom", slug: "intercom", x: "10%", y: "62%", size: 64, depth: 40, delay: 0 },
-    { label: "Notion", slug: "notion", x: "22%", y: "34%", size: 56, depth: 60, delay: 0.6 },
-    { label: "HubSpot", slug: "hubspot", x: "78%", y: "38%", size: 60, depth: -50, delay: 1.1 },
-    { label: "Figma", slug: "figma", x: "90%", y: "68%", size: 68, depth: -70, delay: 0.3 },
-    { label: "Linear", slug: "linear", x: "6%", y: "22%", size: 48, depth: 30, delay: 0.9 },
-    { label: "Zapier", slug: "zapier", x: "92%", y: "18%", size: 52, depth: -30, delay: 1.4 },
-    { label: "Pipedrive", slug: "pipedrive", x: "72%", y: "82%", size: 56, depth: -20, delay: 1.8 },
-    { label: "Google Ads", slug: "googleads", x: "16%", y: "84%", size: 52, depth: 20, delay: 2.2 },
-  ];
 
   return (
     <section
@@ -1178,14 +1143,14 @@ function Integrations() {
       className="relative overflow-hidden py-28 md:py-36 divider-top-angled divider-bottom-angled"
       style={{
         background:
-          "radial-gradient(120% 80% at 50% 40%, oklch(0.9 0.06 300) 0%, oklch(0.94 0.03 300) 55%, oklch(0.97 0.01 285) 100%)",
+          "radial-gradient(120% 80% at 50% 40%, oklch(0.15 0.03 285) 0%, oklch(0.18 0.03 285) 50%, oklch(0.2 0.03 285) 100%)",
       }}
     >
-      <div className="relative mx-auto max-w-4xl px-6 text-center text-[oklch(0.2_0.05_285)]">
+      {/* Premium integration ecosystem visualization */}
+      <div className="relative mx-auto max-w-4xl px-6 text-center">
         <Reveal>
-          <div className="inline-flex items-center gap-3 rounded-md px-4 py-2 text-sm text-[oklch(0.25_0.05_285)]" style={{ background: "transparent", boxShadow: "inset 0 0 0 1px oklch(0.55 0.22 295 / 0.35)" }}>
-            <span>API coming soon</span>
-            <a href="#" className="inline-flex items-center gap-1 font-bold text-[oklch(0.35_0.2_290)]">
+          <div className="inline-flex items-center gap-3 rounded-md px-4 py-2 text-sm text-[oklch(0.8_0.02_285)]" style={{ background: "transparent", boxShadow: "inset 0 0 0 1px oklch(0.55 0.22 295 / 0.35)" }}>
+            <a href="#" className="inline-flex items-center gap-1 font-bold text-[oklch(0.75_0.15_295)] hover:gap-2 transition-all">
               Register your interest <ArrowRight className="w-3.5 h-3.5" />
             </a>
           </div>
@@ -1197,51 +1162,20 @@ function Integrations() {
         </Reveal>
       </div>
 
-      <div className="relative mx-auto max-w-6xl mt-16 md:mt-20 h-[380px] md:h-[440px] px-6">
-        {chips.map((c) => (
-          <div
-            key={c.label}
-            className="absolute -translate-x-1/2 -translate-y-1/2 animate-float"
-            style={{
-              left: c.x,
-              top: c.y,
-              animationDelay: `${c.delay}s`,
-              transform: `translate(-50%, calc(-50% + ${p * c.depth}px))`,
-              transition: "transform 200ms linear",
-            }}
-            aria-label={c.label}
-          >
-            <div
-              className="grid place-items-center rounded-full shadow-[0_20px_40px_-15px_rgba(50,20,80,0.35)] ring-1 ring-black/5 bg-white"
-              style={{
-                width: c.size,
-                height: c.size,
-              }}
-            >
-              <IntegrationIcon slug={c.slug} size={c.size * 0.5} />
-            </div>
-          </div>
-        ))}
-
-        <div
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-          style={{ transform: `translate(-50%, calc(-50% + ${p * -20}px))`, transition: "transform 200ms linear" }}
-        >
-          <div className="relative rounded-full bg-gradient-brand px-10 md:px-14 py-5 md:py-6 shadow-glow flex items-center gap-4">
-            <img src={enrichMark.url} alt="Enrich mark" className="w-9 h-9 md:w-11 md:h-11 rounded-md object-cover" />
-            <span className="text-white text-2xl md:text-3xl font-black tracking-tight">Enrich</span>
-          </div>
-        </div>
+      {/* Premium Ecosystem Visualization */}
+      <div className="relative mx-auto max-w-6xl mt-16 md:mt-20 h-[500px] md:h-[600px] px-6">
+        <IntegrationEcosystem />
       </div>
 
       <div className="relative text-center mt-8">
-        <a href="#" className="inline-flex items-center gap-1.5 font-bold text-[oklch(0.2_0.05_285)]">
+        <a href="#" className="inline-flex items-center gap-1.5 font-bold text-[oklch(0.8_0.02_285)]">
           Explore integrations <ArrowRight className="w-4 h-4" />
         </a>
       </div>
     </section>
   );
 }
+
 
 function CTA() {
   return (
