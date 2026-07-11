@@ -65,20 +65,19 @@
   --brand-deep: oklch(0.32 0.15 290);
   --lime: oklch(0.92 0.2 130);
   --gradient-hero: radial-gradient(120% 80% at 50% 0%, oklch(0.55 0.22 295) 0%, oklch(0.28 0.15 290) 45%, oklch(0.16 0.05 285) 100%);
-  --gradient-brand: linear-gradient(135deg, oklch(0.72 0.2 300), oklch(0.55 0.22 285));
+  --gradient-stats: linear-gradient(165deg, oklch(0.55 0.22 295) 0%, oklch(0.32 0.15 290) 50%, oklch(0.16 0.05 285) 100%);
+  --gradient-cta: radial-gradient(120% 80% at 50% 0%, oklch(0.55 0.22 295) 0%, oklch(0.28 0.15 290) 50%, oklch(0.92 0.2 130 / 0.15) 100%);
   --shadow-glow: 0 20px 60px -20px oklch(0.65 0.22 295 / 0.5);
-  
+  --border-glow-stats: 0 -1px 0 0 oklch(0.65 0.22 295 / 0.4);
+
   /* Extended theme tokens */
   --accent-teal: oklch(0.75 0.14 190);
   --accent-amber: oklch(0.8 0.16 80);
+  --accent-warm: oklch(0.92 0.2 130); /* Lime - only for CTAs and action elements */
   --glow-purple: 0 0 20px oklch(0.65 0.22 295 / 0.5), 0 0 40px oklch(0.65 0.22 295 / 0.25);
   --glow-teal: 0 0 16px oklch(0.75 0.14 190 / 0.45);
   --glow-amber: 0 0 16px oklch(0.8 0.16 80 / 0.4);
   --glow-text: 0 0 14px oklch(0.65 0.22 295 / 0.55);
-}
-
-@layer base {
-  * { border-color: var(--color-border); }
   html { scroll-behavior: smooth; }
   body {
     background-color: var(--color-background);
@@ -90,6 +89,10 @@
 
 @utility bg-gradient-hero { background: var(--gradient-hero); }
 @utility bg-gradient-brand { background: var(--gradient-brand); }
+@utility bg-gradient-stats { background: var(--gradient-stats); box-shadow: var(--border-glow-stats); }
+@utility bg-gradient-cta { background: var(--gradient-cta); }
+@utility text-accent-warm { color: var(--accent-warm); }
+@utility bg-accent-warm { background-color: var(--accent-warm); }
 @utility shadow-glow { box-shadow: var(--shadow-glow); }
 @utility text-balance { text-wrap: balance; }
 
@@ -238,3 +241,55 @@ button, .btn {
   will-change: transform, opacity;
 }
 
+
+/* Custom cursor - premium site-wide signature */
+.custom-cursor {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  mix-blend-mode: difference;
+  border-radius: 50%;
+  background: #fff;
+  width: 8px;
+  height: 8px;
+  transform: translate(-50%, -50%);
+  transition: width 200ms ease, height 200ms ease, background 200ms ease;
+}
+.custom-cursor.expanded {
+  width: 40px;
+  height: 40px;
+  background: oklch(0.65 0.22 295);
+  mix-blend-mode: normal;
+}
+@media (pointer: coarse) {
+  .custom-cursor { display: none; }
+}
+
+/* Section dividers - angled clip-path transitions */
+.divider-top-angled {
+  clip-path: polygon(0 0, 100% 3vw, 100% 100%, 0 100%);
+  margin-top: -3vw;
+  padding-top: 3vw;
+}
+.divider-bottom-angled {
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 3vw), 0 100%);
+  margin-bottom: -3vw;
+  padding-bottom: 3vw;
+}
+
+/* Word-split scale animation for hero - settling into place effect */
+.word-split-container {
+  display: inline;
+}
+.word-split-container .word {
+  display: inline-block;
+  opacity: 0;
+  transform: scale(1.04);
+  animation: word-settle 500ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes word-settle {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
