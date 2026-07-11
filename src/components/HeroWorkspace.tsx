@@ -1,758 +1,538 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { IntegrationIcon } from "./IntegrationIcon";
-import { Zap, Check, RefreshCw, Activity, Clock, TrendingUp, Users, Eye, MessageSquare, Send, Paperclip, Sparkles } from "lucide-react";
+import { Zap, Check, RefreshCw, Activity, Clock, TrendingUp, Users, Eye, MessageSquare, Send, Sparkles, Menu, X, ChevronDown, Filter, MoreHorizontal } from "lucide-react";
 
-// Integration icons with positions for orbital animation
-const integrations = [
-  { slug: "shopify", label: "Shopify", angle: 0, radius: 180, depth: 0 },
-  { slug: "instagram", label: "Instagram", angle: 40, radius: 200, depth: -20 },
-  { slug: "reddit", label: "Reddit", angle: 80, radius: 170, depth: 30 },
-  { slug: "whatsapp", label: "WhatsApp", angle: 120, radius: 190, depth: -40 },
-  { slug: "linkedin", label: "LinkedIn", angle: 160, radius: 175, depth: 20 },
-  { slug: "slack", label: "Slack", angle: 200, radius: 185, depth: -30 },
-  { slug: "hubspot", label: "HubSpot", angle: 240, radius: 178, depth: 40 },
-  { slug: "notion", label: "Notion", angle: 280, radius: 195, depth: -25 },
-  { slug: "salesforce", label: "Salesforce", angle: 320, radius: 172, depth: 35 },
-  { slug: "mailchimp", label: "Mailchimp", angle: 360, radius: 188, depth: -15 },
-  { slug: "klaviyo", label: "Klaviyo", angle: 25, radius: 210, depth: 10 },
-  { slug: "stripe", label: "Stripe", angle: 65, radius: 215, depth: -35 },
-  { slug: "meta", label: "Meta", angle: 145, radius: 208, depth: 25 },
-  { slug: "zapier", label: "Zapier", angle: 185, radius: 212, depth: -45 },
-  { slug: "make", label: "Make", angle: 225, radius: 205, depth: 15 },
-  { slug: "n8n", label: "n8n", angle: 265, radius: 218, depth: -20 },
-  { slug: "wordpress", label: "WordPress", angle: 305, radius: 202, depth: 30 },
-  { slug: "github", label: "GitHub", angle: 345, radius: 192, depth: -10 },
+// Campaign lifecycle states
+const CAMPAIGN_STATES = [
+  "Draft", "Planning", "AI Research", "Generating Assets", 
+  "Awaiting Approval", "Scheduled", "Launching", "Live", 
+  "Optimizing", "Completed"
 ];
 
-// Sample prompts for simulation
-const samplePrompts = [
-  "Launch a full-funnel campaign for our new product line",
-  "Write a blog post about AI marketing automation",
-  "Create social media content for product launch",
-  "Set up email sequence for abandoned carts",
-  "Analyze competitor strategies and create report",
+// Realistic activity messages from AI specialists
+const SPECIALIST_ACTIVITIES = {
+  helena: [
+    "Writing blog post on AI automation",
+    "Updating editorial calendar",
+    "Creating social media briefs",
+    "Drafting email sequences",
+    "Publishing content to CMS",
+    "Generating product descriptions",
+  ],
+  sam: [
+    "Scanning 847 keywords",
+    "Updating SEO scores",
+    "Monitoring SERP changes",
+    "Detecting competitor moves",
+    "Optimizing meta tags",
+    "Improving authority score",
+  ],
+  kai: [
+    "Monitoring social conversations",
+    "Detecting trending topics",
+    "Flagging brand mentions",
+    "Analyzing sentiment",
+    "Responding to engagement",
+    "Tracking viral posts",
+  ],
+  angela: [
+    "Launching email campaign",
+    "Optimizing subject lines",
+    "Monitoring open rates",
+    "A/B testing variants",
+    "Adjusting send times",
+    "Reporting conversions",
+  ],
+};
+
+const CAMPAIGN_NAMES = [
+  "Q4 SaaS Launch", "Product Update Announcement", "Holiday Sale Prep",
+  "Lead Nurture Flow", "Brand Awareness Push", "Competitor Analysis",
+  "Social Media Blitz", "Email Re-engagement", "Webinar Promotion",
 ];
 
-// Animated KPI Counter
-function KPICounter({ value, label, prefix = "", suffix = "", decimals = 0 }: { value: number; label: string; prefix?: string; suffix?: string; decimals?: number }) {
-  const [displayValue, setDisplayValue] = useState(0);
-  const targetRef = useRef(value);
-  const animationRef = useRef<number>();
-
-  useEffect(() => {
-    const start = displayValue;
-    const end = value;
-    const duration = 2000;
-    const startTime = performance.now();
-
-    const animate = (currentTime: number) => {
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const easeOut = 1 - Math.pow(1 - progress, 3);
-      const current = start + (end - start) * easeOut;
-      setDisplayValue(current);
-      targetRef.current = current;
-
-      if (progress < 1) {
-        animationRef.current = requestAnimationFrame(animate);
-      }
-    };
-
-    animationRef.current = requestAnimationFrame(animate);
-    return () => {
-      if (animationRef.current) cancelAnimationFrame(animationRef.current);
-    };
-  }, [value]);
-
-  return (
-    <div className="text-center">
-      <div className="text-2xl font-black text-white">
-        {prefix}{displayValue.toFixed(decimals)}{suffix}
-      </div>
-      <div className="text-xs text-white/60 mt-1">{label}</div>
-    </div>
-  );
-}
-
-// Animated Progress Ring
-function ProgressRing({ progress, size = 60, stroke = 4, color = "#10B981" }: { progress: number; size?: number; stroke?: number; color?: string }) {
-  const [animatedProgress, setAnimatedProgress] = useState(0);
-  const radius = (size - stroke) / 2;
-  const circumference = 2 * Math.PI * radius;
-
-  useEffect(() => {
-    const duration = 1500;
-    const startTime = performance.now();
-    const startProgress = animatedProgress;
-
-    const animate = (currentTime: number) => {
-      const elapsed = currentTime - startTime;
-      const p = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - p, 3);
-      setAnimatedProgress(startProgress + (progress - startProgress) * eased);
-
-      if (p < 1) requestAnimationFrame(animate);
-    };
-
-    requestAnimationFrame(animate);
-  }, [progress]);
-
-  return (
-    <svg width={size} height={size} className="transform -rotate-90">
-      <circle cx={size / 2} cy={size / 2} r={radius} stroke="rgba(255,255,255,0.1)" strokeWidth={stroke} fill="none" />
-      <circle
-        cx={size / 2}
-        cy={size / 2}
-        r={radius}
-        stroke={color}
-        strokeWidth={stroke}
-        fill="none"
-        strokeLinecap="round"
-        strokeDasharray={circumference}
-        strokeDashoffset={circumference * (1 - animatedProgress / 100)}
-        style={{ transition: "stroke-dashoffset 0.1s linear" }}
-      />
-    </svg>
-  );
-}
-
-// Animated Line Chart
-function AnimatedChart({ data, width = 200, height = 80 }: { data: number[]; width?: number; height?: number }) {
-  const [pathD, setPathD] = useState("");
-  const [fillPathD, setFillPathD] = useState("");
-
-  useEffect(() => {
-    const max = Math.max(...data);
-    const min = Math.min(...data);
-    const range = max - min || 1;
-    const padding = 5;
-    const w = width - padding * 2;
-    const h = height - padding * 2;
-
-    const points = data.map((v, i) => ({
-      x: padding + (i / (data.length - 1)) * w,
-      y: padding + h - ((v - min) / range) * h,
-    }));
-
-    const linePath = points.reduce((acc, p, i) => {
-      if (i === 0) return `M ${p.x} ${p.y}`;
-      const prev = points[i - 1];
-      const cp1x = prev.x + (p.x - prev.x) / 3;
-      const cp1y = prev.y;
-      const cp2x = p.x - (p.x - prev.x) / 3;
-      const cp2y = p.y;
-      return `${acc} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p.x} ${p.y}`;
-    }, "");
-
-    const areaPath = `${linePath} L ${points[points.length - 1].x} ${height - padding} L ${padding} ${height - padding} Z`;
-
-    setPathD(linePath);
-    setFillPathD(areaPath);
-  }, [data, width, height]);
-
-  return (
-    <svg width={width} height={height} className="overflow-visible">
-      <defs>
-        <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#A855F7" stopOpacity="0.3" />
-          <stop offset="100%" stopColor="#A855F7" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path d={fillPathD} fill="url(#chartGradient)" />
-      <path d={pathD} stroke="#A855F7" strokeWidth="2" fill="none" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-// Notification Badge
-function NotificationBadge({ type, delay }: { type: "new" | "update" | "complete"; delay: number }) {
-  const [visible, setVisible] = useState(false);
-  const [text, setText] = useState("");
-
-  const messages = {
-    new: ["New lead detected", "Campaign approved", "Content drafted"],
-    update: ["Syncing data...", "Processing...", "Optimizing..."],
-    complete: ["Published!", "Delivered!", "Complete!"],
-  };
-
-  useEffect(() => {
-    const showTimer = setTimeout(() => {
-      setVisible(true);
-      setText(messages[type][Math.floor(Math.random() * messages[type].length)]);
-      const hideTimer = setTimeout(() => setVisible(false), 2500);
-      return () => clearTimeout(hideTimer);
-    }, delay);
-    return () => clearTimeout(showTimer);
-  }, [type, delay]);
-
+// Dashboard cursor simulation
+function DashboardCursor({ position, visible }: { position: { x: number; y: number }; visible: boolean }) {
   if (!visible) return null;
-
-  return (
-    <div className="absolute -top-2 -right-2 px-2 py-1 rounded-full bg-brand text-white text-xs font-medium animate-fade-in shadow-lg">
-      {text}
-    </div>
-  );
-}
-
-// Campaign Card
-function CampaignCard({ title, status, progress, delay }: { title: string; status: "draft" | "running" | "complete"; progress: number; delay: number }) {
-  const [currentStatus, setCurrentStatus] = useState(status);
-  const [currentProgress, setCurrentProgress] = useState(0);
-
-  useEffect(() => {
-    const statusTimer = setTimeout(() => {
-      if (currentStatus === "draft") {
-        setTimeout(() => setCurrentStatus("running"), 1000);
-      } else if (currentStatus === "running" && progress >= 100) {
-        setTimeout(() => setCurrentStatus("complete"), 500);
-      }
-    }, delay);
-    return () => clearTimeout(statusTimer);
-  }, []);
-
-  useEffect(() => {
-    const duration = 3000;
-    const startTime = performance.now();
-
-    const animate = (currentTime: number) => {
-      const elapsed = currentTime - startTime;
-      const p = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - p, 2);
-      setCurrentProgress(progress * eased);
-
-      if (p < 1) requestAnimationFrame(animate);
-    };
-
-    const startTimer = setTimeout(() => {
-      requestAnimationFrame(animate);
-    }, delay);
-    return () => clearTimeout(startTimer);
-  }, [progress, delay]);
-
-  const statusColors = {
-    draft: "bg-white/20 text-white/60",
-    running: "bg-brand/30 text-brand-soft",
-    complete: "bg-lime/30 text-lime",
-  };
-
-  const statusIcons = {
-    draft: <Clock className="w-3 h-3" />,
-    running: <RefreshCw className="w-3 h-3 animate-spin" />,
-    complete: <Check className="w-3 h-3" />,
-  };
-
-  return (
-    <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/10">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium text-white truncate">{title}</span>
-        <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${statusColors[currentStatus]}`}>
-          {statusIcons[currentStatus]}
-          {currentStatus}
-        </span>
-      </div>
-      <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-        <div
-          className="h-full bg-gradient-to-r from-brand to-lime rounded-full transition-all duration-300"
-          style={{ width: `${Math.min(currentProgress, 100)}%` }}
-        />
-      </div>
-    </div>
-  );
-}
-
-// AI Recommendation Card
-function AIRecommendation({ delay }: { delay: number }) {
-  const [visible, setVisible] = useState(false);
-  const [slideIn, setSlideIn] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setVisible(true), delay);
-    const slideTimer = setTimeout(() => setSlideIn(true), delay + 100);
-    const hideTimer = setTimeout(() => {
-      setSlideIn(false);
-      setTimeout(() => setVisible(false), 300);
-    }, delay + 4000);
-    return () => {
-      clearTimeout(timer);
-      clearTimeout(slideTimer);
-      clearTimeout(hideTimer);
-    };
-  }, [delay]);
-
-  if (!visible) return null;
-
-  return (
-    <div className={`bg-gradient-to-br from-brand/20 to-teal/20 backdrop-blur-md rounded-xl p-4 border border-brand/30 transform transition-all duration-500 ${slideIn ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"}`}>
-      <div className="flex items-center gap-2 mb-2">
-        <Sparkles className="w-4 h-4 text-brand-soft" />
-        <span className="text-xs font-semibold text-brand-soft">AI Recommendation</span>
-      </div>
-      <p className="text-sm text-white/90">Increase Instagram posting frequency by 2x during peak engagement hours (2-4 PM)</p>
-      <div className="mt-3 flex gap-2">
-        <button className="px-3 py-1 text-xs bg-brand/30 hover:bg-brand/40 rounded-full text-white transition-colors">Apply</button>
-        <button className="px-3 py-1 text-xs bg-white/10 hover:bg-white/20 rounded-full text-white/70 transition-colors">Dismiss</button>
-      </div>
-    </div>
-  );
-}
-
-// Data Stream Particle
-function DataStreamParticle({ startX, startY, endX, endY, delay }: { startX: number; startY: number; endX: number; endY: number; delay: number }) {
-  const [progress, setProgress] = useState(0);
-
-  useEffect(() => {
-    const duration = 2000 + Math.random() * 1000;
-    const startTime = performance.now() + delay;
-
-    const animate = (currentTime: number) => {
-      if (currentTime < startTime) {
-        requestAnimationFrame(animate);
-        return;
-      }
-      const elapsed = currentTime - startTime;
-      const p = elapsed / duration;
-      if (p < 1) {
-        setProgress(p);
-        requestAnimationFrame(animate);
-      } else {
-        setProgress(0);
-        setTimeout(() => requestAnimationFrame(animate), 500);
-      }
-    };
-
-    requestAnimationFrame(animate);
-  }, [delay]);
-
-  const x = startX + (endX - startX) * progress;
-  const y = startY + (endY - startY) * progress;
-
+  
   return (
     <div
-      className="absolute w-1.5 h-1.5 rounded-full bg-brand-soft shadow-[0_0_8px_rgba(168,85,247,0.8)]"
+      className="absolute pointer-events-none z-50 transition-all duration-300"
       style={{
-        left: x,
-        top: y,
-        transform: "translate(-50%, -50%)",
-        opacity: 0.5 + progress * 0.5,
+        left: position.x,
+        top: position.y,
+        transform: "translate(-2px, -2px)",
       }}
-    />
+    >
+      <div className="w-3 h-3 rounded-full bg-white/80 shadow-lg" />
+    </div>
   );
 }
 
-// Integration Orbiter
-function IntegrationOrbiter({ integration, mouseOffset }: { integration: typeof integrations[0]; mouseOffset: { x: number; y: number } }) {
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [glow, setGlow] = useState(false);
-  const angleRef = useRef(integration.angle);
-  const timeRef = useRef(performance.now());
+// Main Dashboard Widget
+function DashboardWidget({ mouseOffset, promptTriggered }: { mouseOffset: { x: number; y: number }; promptTriggered: boolean }) {
+  const [campaigns, setCampaigns] = useState<Array<{
+    id: number;
+    name: string;
+    state: string;
+    stateIndex: number;
+    progress: number;
+    priority: "high" | "medium" | "low";
+    assigned: string[];
+  }>>([]);
+  const [activities, setActivities] = useState<Array<{ agent: string; message: string; time: string }>>([]);
+  const [kpis, setKpis] = useState({
+    leads: 2847 + Math.floor(Math.random() * 100),
+    revenue: 45600 + Math.floor(Math.random() * 5000),
+    impressions: 1245000,
+    ctr: 2.4 + (Math.random() - 0.5) * 0.3,
+    conversions: 342,
+    roas: 3.2 + (Math.random() - 0.5) * 0.4,
+  });
+  const [chartData, setChartData] = useState([65, 72, 68, 78, 82, 75, 88, 92, 87, 95]);
+  const [cursorPos, setCursorPos] = useState({ x: 100, y: 100 });
+  const [cursorVisible, setCursorVisible] = useState(false);
+  const [selectedTab, setSelectedTab] = useState("campaigns");
+  
+  const containerRef = useRef<HTMLDivElement>(null);
 
+  // Initialize campaigns
   useEffect(() => {
-    const animate = () => {
-      const now = performance.now();
-      const elapsed = (now - timeRef.current) / 1000;
-      const angle = (angleRef.current + elapsed * 10 + 360) % 360;
-      const rad = (angle * Math.PI) / 180;
+    const initial = CAMPAIGN_NAMES.slice(0, 4).map((name, i) => ({
+      id: i + 1,
+      name,
+      state: CAMPAIGN_STATES[i * 2],
+      stateIndex: i * 2,
+      progress: (i * 2) * 10,
+      priority: (["high", "medium", "low", "medium"] as const)[i],
+      assigned: Object.keys(SPECIALIST_ACTIVITIES).slice(0, i + 1),
+    }));
+    setCampaigns(initial);
+    
+    // Initial activities
+    setActivities([
+      { agent: "Kai", message: "Identified 12 keyword opportunities", time: "Just now" },
+      { agent: "Sam", message: "Improved SEO score by 18%", time: "2m ago" },
+      { agent: "Helena", message: "Drafting Q4 content calendar", time: "5m ago" },
+    ]);
+  }, []);
 
-      const baseX = Math.cos(rad) * integration.radius;
-      const baseY = Math.sin(rad) * integration.radius;
-
-      // Add mouse parallax
-      const parallaxX = mouseOffset.x * (integration.depth / 50);
-      const parallaxY = mouseOffset.y * (integration.depth / 50);
-
-      // Add floating motion
-      const floatX = Math.sin(elapsed * 0.5 + integration.angle) * 10;
-      const floatY = Math.cos(elapsed * 0.3 + integration.angle) * 10;
-
-      setPosition({
-        x: baseX + parallaxX + floatX,
-        y: baseY + parallaxY + floatY,
-      });
-
-      requestAnimationFrame(animate);
-    };
-
-    const timer = setTimeout(() => requestAnimationFrame(animate), integration.angle * 10);
-    return () => clearTimeout(timer);
-  }, [integration, mouseOffset]);
-
-  // Random glow effect
+  // Independent campaign state progression (8-15 seconds)
   useEffect(() => {
     const interval = setInterval(() => {
-      setGlow(true);
-      setTimeout(() => setGlow(false), 500 + Math.random() * 1000);
-    }, 5000 + Math.random() * 5000);
+      setCampaigns(prev => prev.map(campaign => {
+        if (campaign.stateIndex >= CAMPAIGN_STATES.length - 1) return campaign;
+        
+        // Random chance to progress
+        if (Math.random() > 0.3) return campaign;
+        
+        const newIndex = campaign.stateIndex + 1;
+        return {
+          ...campaign,
+          state: CAMPAIGN_STATES[newIndex],
+          stateIndex: newIndex,
+          progress: Math.min(100, campaign.progress + 12),
+        };
+      }));
+    }, 8000 + Math.random() * 7000);
+    
     return () => clearInterval(interval);
   }, []);
 
-  return (
-    <div
-      className={`absolute cursor-pointer transition-all duration-300 ${glow ? "z-20" : "z-10"}`}
-      style={{
-        left: `calc(50% + ${position.x}px)`,
-        top: `calc(50% + ${position.y}px)`,
-        transform: `translate(-50%, -50%) rotate(${Math.sin(position.x * 0.1) * 5}deg)`,
-      }}
-    >
-      <div
-        className={`grid place-items-center rounded-full bg-white/20 backdrop-blur-md transition-all duration-300 ${glow ? "shadow-[0_0_30px_rgba(168,85,247,0.6)] ring-2 ring-brand-soft" : "shadow-lg"}`}
-        style={{
-          width: 44,
-          height: 44,
-        }}
-      >
-        <IntegrationIcon slug={integration.slug} size={22} />
-      </div>
-    </div>
-  );
-}
-
-// Connection Line
-function ConnectionLine({ from, to, progress }: { from: { x: number; y: number }; to: { x: number; y: number }; progress: number }) {
-  const dx = to.x - from.x;
-  const dy = to.y - from.y;
-  const length = Math.sqrt(dx * dx + dy * dy);
-  const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-
-  return (
-    <div
-      className="absolute pointer-events-none"
-      style={{
-        left: from.x,
-        top: from.y,
-        width: length,
-        height: 1,
-        transform: `rotate(${angle}deg)`,
-        transformOrigin: "0 50%",
-      }}
-    >
-      <div className="w-full h-px bg-gradient-to-r from-brand/30 via-brand/50 to-brand/30" />
-      <div
-        className="absolute w-2 h-2 rounded-full bg-brand-soft shadow-[0_0_10px_rgba(168,85,247,0.8)]"
-        style={{
-          left: `${progress * 100}%`,
-          top: "50%",
-          transform: "translate(-50%, -50%)",
-        }}
-      />
-    </div>
-  );
-}
-
-// Workflow Timeline Node
-function WorkflowNode({ label, type, position, delay }: { label: string; type: "agent" | "action" | "checkpoint"; position: { x: number; y: number }; delay: number }) {
-  const [visible, setVisible] = useState(false);
-  const [pulse, setPulse] = useState(false);
-
+  // Independent activity updates (one at a time, every 6-12 seconds)
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setVisible(true);
-      setInterval(() => {
-        setPulse(true);
-        setTimeout(() => setPulse(false), 600);
-      }, 3000 + Math.random() * 2000);
-    }, delay);
-    return () => clearTimeout(timer);
-  }, [delay]);
+    const agents = Object.keys(SPECIALIST_ACTIVITIES);
+    
+    const interval = setInterval(() => {
+      const agent = agents[Math.floor(Math.random() * agents.length)];
+      const messages = SPECIALIST_ACTIVITIES[agent as keyof typeof SPECIALIST_ACTIVITIES];
+      const message = messages[Math.floor(Math.random() * messages.length)];
+      
+      setActivities(prev => [
+        { agent: agent.charAt(0).toUpperCase() + agent.slice(1), message, time: "Just now" },
+        ...prev.slice(0, 4).map(a => ({ ...a, time: updateTime(a.time) })),
+      ]);
+    }, 6000 + Math.random() * 6000);
+    
+    return () => clearInterval(interval);
+  }, []);
 
-  const colors = {
-    agent: "bg-brand/40 border-brand",
-    action: "bg-teal/40 border-teal",
-    checkpoint: "bg-lime/40 border-lime",
-  };
-
-  const icons = {
-    agent: <Users className="w-3 h-3" />,
-    action: <Zap className="w-3 h-3" />,
-    checkpoint: <Check className="w-3 h-3" />,
-  };
-
-  if (!visible) return null;
-
-  return (
-    <div
-      className={`absolute flex items-center gap-1.5 px-2 py-1 rounded-full border ${colors[type]} transition-all duration-500 ${pulse ? "scale-110 shadow-lg" : "scale-100"}`}
-      style={{
-        left: `calc(50% + ${position.x}px)`,
-        top: `calc(50% + ${position.y}px)`,
-        transform: "translate(-50%, -50%)",
-      }}
-    >
-      {icons[type]}
-      <span className="text-[10px] font-medium text-white/80 whitespace-nowrap">{label}</span>
-    </div>
-  );
-}
-
-// Main HeroWorkspace Component
-export function HeroWorkspace({ mouseOffset }: { mouseOffset: { x: number; y: number } }) {
-  const [chartData, setChartData] = useState([20, 35, 28, 45, 38, 52, 48, 65, 58, 72, 68, 85]);
-  const [connectionProgress, setConnectionProgress] = useState(0);
-  const [kpis, setKpis] = useState({ leads: 0, revenue: 0, engagement: 0 });
-
-  // Animate chart data
+  // KPI fluctuations (every 4-8 seconds)
   useEffect(() => {
     const interval = setInterval(() => {
-      setChartData((prev) => {
+      setKpis(prev => ({
+        ...prev,
+        leads: prev.leads + Math.floor(Math.random() * 5),
+        revenue: prev.revenue + Math.floor(Math.random() * 200),
+        ctr: Math.max(0.5, Math.min(5, prev.ctr + (Math.random() - 0.5) * 0.2)),
+        roas: Math.max(1, Math.min(8, prev.roas + (Math.random() - 0.5) * 0.3)),
+      }));
+    }, 4000 + Math.random() * 4000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  // Chart data refresh (5-10 seconds)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setChartData(prev => {
         const newData = [...prev.slice(1)];
         const lastValue = newData[newData.length - 1];
-        const change = (Math.random() - 0.3) * 15;
-        newData.push(Math.max(10, Math.min(95, lastValue + change)));
+        const change = (Math.random() - 0.3) * 8;
+        newData.push(Math.max(50, Math.min(100, lastValue + change)));
         return newData;
       });
-    }, 2000);
+    }, 5000 + Math.random() * 5000);
+    
     return () => clearInterval(interval);
   }, []);
 
-  // Animate KPIs
+  // Simulate dashboard cursor (every 15-30 seconds)
   useEffect(() => {
-    const interval = setInterval(() => {
-      setKpis((prev) => ({
-        leads: prev.leads + Math.floor(Math.random() * 3),
-        revenue: prev.revenue + Math.floor(Math.random() * 50),
-        engagement: Math.min(100, prev.engagement + Math.random() * 2),
-      }));
-    }, 1500);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Animate connection progress
-  useEffect(() => {
-    const animate = () => {
-      setConnectionProgress((prev) => (prev + 0.005) % 1);
+    const moveCursor = () => {
+      if (!containerRef.current) return;
+      
+      setCursorVisible(true);
+      const rect = containerRef.current.getBoundingClientRect();
+      
+      // Move to random positions within dashboard
+      const targetX = 50 + Math.random() * 400;
+      const targetY = 80 + Math.random() * 280;
+      
+      // Animate cursor movement
+      let currentX = cursorPos.x;
+      let currentY = cursorPos.y;
+      const animate = () => {
+        currentX += (targetX - currentX) * 0.1;
+        currentY += (targetY - currentY) * 0.1;
+        setCursorPos({ x: currentX, y: currentY });
+        
+        if (Math.abs(targetX - currentX) > 2 || Math.abs(targetY - currentY) > 2) {
+          requestAnimationFrame(animate);
+        } else {
+          setTimeout(() => setCursorVisible(false), 2000);
+        }
+      };
       requestAnimationFrame(animate);
     };
-    requestAnimationFrame(animate);
-  }, []);
+    
+    const interval = setInterval(moveCursor, 15000 + Math.random() * 15000);
+    return () => clearInterval(interval);
+  }, [cursorPos]);
 
-  // Calculate integration positions for connection lines
-  const hubCenter = { x: 0, y: 0 };
+  // Respond to prompt triggers
+  useEffect(() => {
+    if (promptTriggered) {
+      // Trigger campaign progression
+      setCampaigns(prev => prev.map((c, i) => 
+        i === 0 ? { ...c, state: "Generating Assets", stateIndex: 3, progress: 40 } : c
+      ));
+      
+      // Add activity
+      setActivities(prev => [
+        { agent: "Helena", message: "Creating LinkedIn campaign assets", time: "Just now" },
+        ...prev.slice(0, 4),
+      ]);
+    }
+  }, [promptTriggered]);
+
+  // Very subtle parallax (3-8 pixels)
+  const parallaxX = mouseOffset.x * 5;
+  const parallaxY = mouseOffset.y * 5;
 
   return (
-    <div className="absolute inset-0 overflow-hidden">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[oklch(0.12_0.02_285)] via-[oklch(0.15_0.03_290)] to-[oklch(0.12_0.02_280)]" />
-
-      {/* Animated grid */}
-      <div className="absolute inset-0 opacity-5">
-        <div
-          className="w-full h-full"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(168,85,247,0.3) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(168,85,247,0.3) 1px, transparent 1px)
-            `,
-            backgroundSize: "60px 60px",
-            transform: `perspective(500px) rotateX(60deg) translateY(${mouseOffset.y * 0.5}px) translateX(${mouseOffset.x * 0.5}px)`,
-            transformOrigin: "center top",
-          }}
-        />
+    <div 
+      ref={containerRef}
+      className="relative w-full h-full rounded-2xl bg-[oklch(0.12_0.02_285)]/90 backdrop-blur-xl border border-white/10 overflow-hidden"
+      style={{
+        transform: `translate(${parallaxX}px, ${parallaxY}px)`,
+        transition: "transform 0.5s ease-out",
+      }}
+    >
+      {/* Dashboard Header */}
+      <div className="flex items-center justify-between px-5 py-3 border-b border-white/5">
+        <div className="flex items-center gap-3">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-brand to-brand-deep flex items-center justify-center">
+            <Zap className="w-3.5 h-3.5 text-white" />
+          </div>
+          <span className="text-sm font-semibold text-white/90">Enrich Dashboard</span>
+        </div>
+        <div className="flex items-center gap-2 text-xs text-white/50">
+          <span className="w-1.5 h-1.5 rounded-full bg-lime animate-pulse" />
+          <span>Autonomous</span>
+        </div>
       </div>
 
-      {/* Ambient glow effects */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-brand/10 blur-3xl animate-pulse" />
-      <div className="absolute bottom-1/3 right-1/4 w-80 h-80 rounded-full bg-teal/10 blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
-      <div className="absolute top-1/2 right-1/3 w-64 h-64 rounded-full bg-lime/5 blur-3xl animate-pulse" style={{ animationDelay: "2s" }} />
+      {/* Tabs */}
+      <div className="flex gap-1 px-4 py-2 border-b border-white/5">
+        {["campaigns", "analytics", "workflows"].map(tab => (
+          <button
+            key={tab}
+            onClick={() => setSelectedTab(tab)}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+              selectedTab === tab 
+                ? "bg-brand/30 text-brand-soft" 
+                : "text-white/50 hover:text-white/70 hover:bg-white/5"
+            }`}
+          >
+            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+          </button>
+        ))}
+      </div>
 
-      {/* Main Dashboard Area */}
-      <div
-        className="absolute inset-0 transition-transform duration-300"
-        style={{
-          transform: `translateX(${mouseOffset.x * 0.3}px) translateY(${mouseOffset.y * 0.3}px)`,
-        }}
-      >
-        {/* Central Dashboard Panel */}
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-3xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl"
-          style={{
-            transform: `translate(-50%, -50%) translateX(${mouseOffset.x * 0.5}px) translateY(${mouseOffset.y * 0.5}px)`,
-          }}
-        >
-          {/* Dashboard Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-brand flex items-center justify-center">
-                <Zap className="w-4 h-4 text-white" />
+      {/* Content */}
+      <div className="p-4 space-y-4">
+        {/* KPI Row */}
+        <div className="grid grid-cols-4 gap-3">
+          {[
+            { label: "Leads", value: kpis.leads.toLocaleString(), trend: "+12%" },
+            { label: "Revenue", value: `$${(kpis.revenue / 1000).toFixed(1)}K`, trend: "+8%" },
+            { label: "CTR", value: `${kpis.ctr.toFixed(1)}%`, trend: kpis.ctr > 2.4 ? "+0.3%" : "-0.1%" },
+            { label: "ROAS", value: `${kpis.roas.toFixed(1)}x`, trend: kpis.roas > 3.2 ? "+0.2" : "-0.1" },
+          ].map((kpi, i) => (
+            <div key={i} className="bg-white/5 rounded-lg p-2.5 border border-white/5">
+              <div className="text-[10px] text-white/40 uppercase tracking-wide">{kpi.label}</div>
+              <div className="text-sm font-bold text-white mt-0.5">{kpi.value}</div>
+              <div className={`text-[10px] mt-1 ${kpi.trend.startsWith("+") ? "text-lime" : "text-red-400"}`}>
+                {kpi.trend}
               </div>
-              <span className="font-semibold text-white">Marketing Dashboard</span>
             </div>
-            <div className="flex items-center gap-2 text-xs text-white/60">
-              <span className="w-2 h-2 rounded-full bg-lime animate-pulse" />
-              Live
-            </div>
+          ))}
+        </div>
+
+        {/* Campaign List */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-white/60">Active Campaigns</span>
+            <button className="text-[10px] text-brand-soft hover:underline">View All</button>
           </div>
-
-          {/* Dashboard Content */}
-          <div className="p-6 grid grid-cols-4 gap-4">
-            {/* KPIs */}
-            <KPICounter value={kpis.leads} label="New Leads" suffix="+" />
-            <KPICounter value={kpis.revenue} label="Revenue" prefix="$" />
-            <KPICounter value={kpis.engagement} label="Engagement" suffix="%" />
-            <KPICounter value={72} label="Sentiment" suffix="%" />
-
-            {/* Chart */}
-            <div className="col-span-2 bg-white/5 rounded-xl p-4 border border-white/10">
+          {campaigns.slice(0, 3).map(campaign => (
+            <div key={campaign.id} className="bg-white/5 rounded-lg p-3 border border-white/5 hover:border-white/10 transition-colors">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-white/60">Campaign Performance</span>
-                <TrendingUp className="w-4 h-4 text-lime" />
+                <span className="text-xs font-medium text-white truncate">{campaign.name}</span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                  campaign.state === "Live" ? "bg-lime/20 text-lime" :
+                  campaign.state === "Optimizing" ? "bg-brand/20 text-brand-soft" :
+                  "bg-white/10 text-white/60"
+                }`}>
+                  {campaign.state}
+                </span>
               </div>
-              <AnimatedChart data={chartData} width={250} height={80} />
-            </div>
-
-            {/* Progress Rings */}
-            <div className="col-span-2 bg-white/5 rounded-xl p-4 border border-white/10">
-              <div className="flex items-center justify-around">
-                <div className="relative">
-                  <ProgressRing progress={kpis.engagement} size={50} />
-                  <div className="absolute inset-0 flex items-center justify-center text-xs font-medium text-white">
-                    {kpis.engagement.toFixed(0)}%
-                  </div>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-brand to-lime rounded-full transition-all duration-1000"
+                    style={{ width: `${campaign.progress}%` }}
+                  />
                 </div>
-                <div className="relative">
-                  <ProgressRing progress={85} size={50} color="#10B981" />
-                  <div className="absolute inset-0 flex items-center justify-center text-xs font-medium text-white">
-                    85%
-                  </div>
-                </div>
-                <div className="relative">
-                  <ProgressRing progress={68} size={50} color="#06B6D4" />
-                  <div className="absolute inset-0 flex items-center justify-center text-xs font-medium text-white">
-                    68%
-                  </div>
-                </div>
+                <span className="text-[10px] text-white/40">{campaign.progress}%</span>
               </div>
-            </div>
-
-            {/* Campaign Cards */}
-            <div className="col-span-2 space-y-2">
-              <CampaignCard title="Summer Sale" status="running" progress={75} delay={0} />
-              <CampaignCard title="Product Launch" status="draft" progress={0} delay={2000} />
-            </div>
-
-            {/* Activity Feed */}
-            <div className="col-span-2 bg-white/5 rounded-xl p-4 border border-white/10">
-              <div className="flex items-center gap-2 mb-3">
-                <Activity className="w-4 h-4 text-brand-soft" />
-                <span className="text-xs text-white/60">Recent Activity</span>
-              </div>
-              <div className="space-y-2">
-                {[
-                  { icon: Users, text: "New subscriber", time: "2m" },
-                  { icon: MessageSquare, text: "Reply posted", time: "5m" },
-                  { icon: Eye, text: "Post reached 1K", time: "12m" },
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-2 text-xs text-white/70">
-                    <item.icon className="w-3 h-3" />
-                    <span>{item.text}</span>
-                    <span className="ml-auto text-white/40">{item.time}</span>
-                  </div>
+              <div className="flex gap-1 mt-2">
+                {campaign.assigned.map(agent => (
+                  <span key={agent} className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-white/40">
+                    {agent.charAt(0).toUpperCase() + agent.slice(1)}
+                  </span>
                 ))}
               </div>
             </div>
-          </div>
-
-          {/* Notification Badges */}
-          <NotificationBadge type="new" delay={3000} />
-          <NotificationBadge type="update" delay={5000} />
-          <NotificationBadge type="complete" delay={7000} />
+          ))}
         </div>
 
-        {/* AI Recommendation */}
-        <AIRecommendation delay={4000} />
+        {/* Activity Feed */}
+        <div className="bg-white/5 rounded-lg p-3 border border-white/5">
+          <div className="flex items-center gap-2 mb-2">
+            <Activity className="w-3 h-3 text-brand-soft" />
+            <span className="text-xs font-medium text-white/60">AI Activity</span>
+          </div>
+          <div className="space-y-2">
+            {activities.map((activity, i) => (
+              <div key={i} className={`flex items-start gap-2 text-[11px] ${i === 0 ? "text-white" : "text-white/70"}`}>
+                <span className="font-medium text-brand-soft shrink-0">{activity.agent}:</span>
+                <span className="flex-1">{activity.message}</span>
+                <span className="text-white/30 shrink-0">{activity.time}</span>
+              </div>
+            ))}
+          </div>
+        </div>
 
-        {/* Workflow Timeline */}
-        <WorkflowNode label="Helena" type="agent" position={{ x: -280, y: -120 }} delay={1000} />
-        <WorkflowNode label="Drafting..." type="action" position={{ x: -150, y: -80 }} delay={1500} />
-        <WorkflowNode label="Approved" type="checkpoint" position={{ x: 0, y: -40 }} delay={2000} />
-        <WorkflowNode label="Sam" type="agent" position={{ x: 150, y: -60 }} delay={2500} />
-        <WorkflowNode label="Publishing..." type="action" position={{ x: 280, y: -100 }} delay={3000} />
-
-        {/* Floating Data Particles */}
-        {Array.from({ length: 15 }).map((_, i) => (
-          <DataStreamParticle
-            key={i}
-            startX={30 + Math.random() * 40}
-            startY={30 + Math.random() * 40}
-            endX={50 + Math.random() * 40}
-            endY={50 + Math.random() * 40}
-            delay={i * 500}
-          />
-        ))}
+        {/* Mini Chart */}
+        <div className="bg-white/5 rounded-lg p-3 border border-white/5">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-white/60">Performance Trend</span>
+            <TrendingUp className="w-3 h-3 text-lime" />
+          </div>
+          <div className="flex items-end gap-1 h-12">
+            {chartData.map((value, i) => (
+              <div 
+                key={i}
+                className="flex-1 bg-gradient-to-t from-brand/50 to-brand-soft/50 rounded-t transition-all duration-500"
+                style={{ height: `${value}%` }}
+              />
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* Integration Orbiters */}
-      <div
-        className="absolute inset-0 transition-transform duration-300"
-        style={{
-          transform: `translateX(${mouseOffset.x * 0.15}px) translateY(${mouseOffset.y * 0.15}px)`,
-        }}
+      {/* Dashboard Cursor */}
+      <DashboardCursor position={cursorPos} visible={cursorVisible} />
+    </div>
+  );
+}
+
+// Mobile Dashboard Widget
+function MobileDashboardWidget({ mouseOffset }: { mouseOffset: { x: number; y: number } }) {
+  const [optimizationScore, setOptimizationScore] = useState(78);
+  const [openRate, setOpenRate] = useState(24.5);
+  const [engagement, setEngagement] = useState(4.2);
+  
+  // Independent metric updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setOptimizationScore(prev => Math.min(100, Math.max(50, prev + (Math.random() - 0.5) * 3)));
+      setOpenRate(prev => Math.max(15, Math.min(40, prev + (Math.random() - 0.5) * 1)));
+      setEngagement(prev => Math.max(1, Math.min(10, prev + (Math.random() - 0.5) * 0.5)));
+    }, 7000 + Math.random() * 5000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  const parallaxX = mouseOffset.x * 3;
+  const parallaxY = mouseOffset.y * 3;
+
+  return (
+    <div
+      className="relative rounded-2xl bg-[oklch(0.12_0.02_285)]/90 backdrop-blur-xl border border-white/10 overflow-hidden"
+      style={{
+        transform: `translate(${parallaxX}px, ${parallaxY}px)`,
+        transition: "transform 0.5s ease-out",
+      }}
+    >
+      {/* Phone frame */}
+      <div className="p-3">
+        <div className="bg-[oklch(0.15_0.02_285)] rounded-xl p-4">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-xs font-semibold text-white">Quick Stats</span>
+            <RefreshCw className="w-3 h-3 text-white/40 animate-spin" style={{ animationDuration: "3s" }} />
+          </div>
+          
+          {/* Metric Cards */}
+          <div className="space-y-3">
+            <div className="bg-white/5 rounded-lg p-3 border border-white/5">
+              <div className="text-[10px] text-white/40 uppercase">Optimization</div>
+              <div className="flex items-center justify-between mt-1">
+                <span className="text-lg font-bold text-white">{optimizationScore.toFixed(0)}%</span>
+                <div className="w-16 h-2 bg-white/10 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-lime rounded-full transition-all duration-1000"
+                    style={{ width: `${optimizationScore}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white/5 rounded-lg p-3 border border-white/5">
+              <div className="text-[10px] text-white/40 uppercase">Email Open Rate</div>
+              <div className="flex items-center justify-between mt-1">
+                <span className="text-lg font-bold text-white">{openRate.toFixed(1)}%</span>
+                <TrendingUp className="w-4 h-4 text-lime" />
+              </div>
+            </div>
+            
+            <div className="bg-white/5 rounded-lg p-3 border border-white/5">
+              <div className="text-[10px] text-white/40 uppercase">Engagement</div>
+              <div className="flex items-center justify-between mt-1">
+                <span className="text-lg font-bold text-white">{engagement.toFixed(1)}%</span>
+                <span className="text-[10px] text-lime">+0.8%</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Mini Notification */}
+          <div className="mt-4 bg-brand/20 rounded-lg p-2 border border-brand/20">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-3 h-3 text-brand-soft" />
+              <span className="text-[10px] text-brand-soft">AI optimizing campaign...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Main HeroWorkspace Component - Real SaaS simulation
+export function HeroWorkspace({ mouseOffset }: { mouseOffset: { x: number; y: number } }) {
+  const [promptTriggered, setPromptTriggered] = useState(false);
+  
+  // Trigger dashboard response when prompt simulates activity
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPromptTriggered(true);
+      setTimeout(() => setPromptTriggered(false), 500);
+    }, 25000 + Math.random() * 15000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="absolute inset-0 overflow-hidden">
+      {/* Subtle gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[oklch(0.1_0.02_285)] via-[oklch(0.12_0.02_290)] to-[oklch(0.1_0.02_280)]" />
+
+      {/* Main desktop dashboard (left/center) */}
+      <div 
+        className="absolute left-[5%] top-[15%] w-[55%] h-[70%]"
       >
-        {integrations.map((integration) => (
-          <IntegrationOrbiter key={integration.slug} integration={integration} mouseOffset={mouseOffset} />
-        ))}
-
-        {/* Central Hub Glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <div className="w-20 h-20 rounded-full bg-gradient-brand shadow-[0_0_60px_rgba(168,85,247,0.5)] animate-pulse" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Zap className="w-8 h-8 text-white" />
-          </div>
-        </div>
-
-        {/* Orbital Rings */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <div className="w-[360px] h-[360px] rounded-full border border-brand/20 animate-spin" style={{ animationDuration: "60s" }} />
-          <div className="absolute inset-4 w-[440px] h-[440px] rounded-full border border-teal/10 animate-spin" style={{ animationDuration: "80s", animationDirection: "reverse" }} />
-          <div className="absolute inset-8 w-[520px] h-[520px] rounded-full border border-lime/5 animate-spin" style={{ animationDuration: "100s" }} />
-        </div>
+        <DashboardWidget mouseOffset={mouseOffset} promptTriggered={promptTriggered} />
       </div>
 
-      {/* Ambient Particles */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {Array.from({ length: 30 }).map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-1 h-1 rounded-full bg-brand-soft/30"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animation: `float-particle ${10 + Math.random() * 10}s ease-in-out infinite`,
-              animationDelay: `${Math.random() * 5}s`,
-            }}
-          />
-        ))}
+      {/* Mobile dashboard (right) */}
+      <div 
+        className="absolute right-[8%] top-[25%] w-[25%]"
+      >
+        <MobileDashboardWidget mouseOffset={mouseOffset} />
       </div>
 
-      {/* Light Sweep Effect */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-20"
+      {/* Subtle glass reflections */}
+      <div 
+        className="absolute inset-0 pointer-events-none opacity-[0.02]"
         style={{
-          background: "linear-gradient(105deg, transparent 40%, rgba(168,85,247,0.3) 50%, transparent 60%)",
-          animation: "light-sweep 8s ease-in-out infinite",
+          background: "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%)",
+          transform: `translate(${mouseOffset.x * 2}px, ${mouseOffset.y * 2}px)`,
+          transition: "transform 1s ease-out",
         }}
       />
 
-      {/* CSS Animations */}
+      {/* Minimal particles (only inside dashboards) */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Particles stay within dashboard areas */}
+        <div className="absolute left-[5%] top-[15%] w-[55%] h-[70%]">
+          <div className="absolute w-1 h-1 rounded-full bg-brand-soft/20" style={{ left: '20%', top: '30%', animation: 'particle-drift 15s ease-in-out infinite' }} />
+          <div className="absolute w-0.5 h-0.5 rounded-full bg-brand-soft/15" style={{ left: '60%', top: '50%', animation: 'particle-drift 20s ease-in-out infinite 2s' }} />
+          <div className="absolute w-1 h-1 rounded-full bg-brand-soft/10" style={{ left: '40%', top: '70%', animation: 'particle-drift 18s ease-in-out infinite 4s' }} />
+        </div>
+      </div>
+
+      {/* CSS - minimal, functional animations only */}
       <style>{`
-        @keyframes float-particle {
-          0%, 100% { transform: translateY(0) scale(1); opacity: 0.3; }
-          50% { transform: translateY(-30px) scale(1.5); opacity: 0.6; }
-        }
-        @keyframes light-sweep {
-          0% { transform: translateX(-100%); }
-          50% { transform: translateX(100%); }
-          100% { transform: translateX(-100%); }
-        }
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in {
-          animation: fade-in 0.3s ease-out forwards;
+        @keyframes particle-drift {
+          0%, 100% { transform: translate(0, 0); opacity: 0.3; }
+          25% { transform: translate(10px, -10px); opacity: 0.5; }
+          50% { transform: translate(-5px, 5px); opacity: 0.3; }
+          75% { transform: translate(8px, 8px); opacity: 0.4; }
         }
       `}</style>
     </div>
   );
+}
+
+function updateTime(time: string): string {
+  if (time === "Just now") return "1m ago";
+  const match = time.match(/(\d+)m ago/);
+  if (match) {
+    const mins = parseInt(match[1]) + 1;
+    return mins >= 60 ? "1h ago" : `${mins}m ago`;
+  }
+  return time;
 }
 
 export default HeroWorkspace;

@@ -588,27 +588,30 @@ function Hero() {
 
   return (
     <section ref={heroRef} className="relative overflow-hidden bg-gradient-hero min-h-[120vh]">
-      {/* Cinematic Hero Workspace Background */}
-      {!reduced && (
-        <HeroWorkspace mouseOffset={mouseOffset} />
+      {/* Hero Workspace Background - positioned behind everything */}
+      {!reduced && mounted && (
+        <div className="absolute inset-0 z-0">
+          <HeroWorkspace mouseOffset={mouseOffset} />
+        </div>
       )}
       
-      {/* Dark overlay for text legibility */}
+      {/* Subtle gradient overlay for text legibility - NOT cinematic, just functional */}
       <div 
         className="absolute inset-0 z-[1] pointer-events-none"
         style={{
           background: `
             linear-gradient(
               to bottom,
-              oklch(0.15 0.03 285 / 0.7) 0%,
-              oklch(0.15 0.03 285 / 0.6) 40%,
-              oklch(0.15 0.03 285 / 0.5) 70%,
-              oklch(0.15 0.03 285 / 0.7) 100%
+              oklch(0.11 0.02 285 / 0.75) 0%,
+              oklch(0.11 0.02 285 / 0.65) 35%,
+              oklch(0.11 0.02 285 / 0.5) 70%,
+              oklch(0.11 0.02 285 / 0.75) 100%
             )
           `
         }}
       />
 
+      {/* Foreground content - STAYS FIXED */}
       <div className="relative z-10 mx-auto max-w-6xl px-6 pt-32 md:pt-40 pb-16 text-center">
         {/* Hero headline with word-split scale animation */}
         <h1 className="font-black tracking-tight text-balance text-6xl sm:text-7xl md:text-8xl lg:text-9xl leading-[0.9]">
@@ -617,7 +620,7 @@ function Hero() {
         </h1>
 
         <div className="mt-16 mx-auto max-w-2xl animate-reveal" style={{ animationDelay: "150ms" }}>
-          {/* Simulated Prompt Bar with real-time typing animation */}
+          {/* Simulated Prompt Bar */}
           {mounted && !reduced ? (
             <SimulatedPromptBar />
           ) : (
@@ -657,25 +660,35 @@ function Hero() {
         )}
       </div>
 
-      {/* Integration icons marquee with orbital animation */}
+      {/* Integration icons - STAY STATIC with subtle breathing only */}
       <div className="relative z-10 border-t border-white/10 overflow-hidden py-8">
         <div className="mx-auto max-w-7xl px-6">
           <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10">
             {integrationIcons.map((icon, i) => (
               <Reveal key={icon.slug} delay={i * 60}>
                 <div 
-                  className="flex items-center justify-center w-14 h-14 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 hover:scale-110 transition-all cursor-pointer group"
+                  className="flex items-center justify-center w-14 h-14 rounded-full bg-white/10 backdrop-blur-sm transition-opacity hover:opacity-100 opacity-70 cursor-pointer"
                   aria-label={icon.label}
+                  style={{
+                    animation: "gentle-breathe 4s ease-in-out infinite",
+                    animationDelay: `${i * 0.3}s`,
+                  }}
                 >
                   <IntegrationIcon slug={icon.slug} size={28} />
-                  {/* Glow effect on hover */}
-                  <div className="absolute inset-0 rounded-full bg-brand/20 opacity-0 group-hover:opacity-100 blur-xl transition-opacity" />
                 </div>
               </Reveal>
             ))}
           </div>
         </div>
       </div>
+      
+      {/* Minimal CSS for breathing animation */}
+      <style>{`
+        @keyframes gentle-breathe {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.03); }
+        }
+      `}</style>
     </section>
   );
 }
