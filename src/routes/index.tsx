@@ -6,6 +6,9 @@ import { loadSlim } from "@tsparticles/slim";
 import type { Engine } from "@tsparticles/engine";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { IntegrationIcon, integrationColors } from "@/components/IntegrationIcon";
+import { CustomCursor } from "@/components/CustomCursor";
+import { StepConnector } from "@/components/StepConnector";
 
 import helenaImg from "@/assets/agent-helena.jpg";
 import samImg from "@/assets/agent-sam.jpg";
@@ -267,6 +270,41 @@ function AtmosphericBackground({
   );
 }
 
+/* Word-split scale animation for hero headline - settling into place effect */
+function AnimatedHeadline({ 
+  text, 
+  delay = 0, 
+  isHero = false,
+  glow = false
+}: { 
+  text: string; 
+  delay?: number;
+  isHero?: boolean;
+  glow?: boolean;
+}) {
+  const reduced = useReducedMotion();
+
+  if (reduced || !isHero) {
+    // Simple static display for non-hero or reduced motion
+    return <span className={glow ? "text-glow" : ""}>{text}</span>;
+  }
+
+  const words = text.split(" ");
+  return (
+    <span className="word-split-container">
+      {words.map((word, i) => (
+        <span 
+          key={i} 
+          className={`word ${glow ? "text-glow" : ""}`}
+          style={{ animationDelay: `${delay + i * 80}ms` }}
+        >
+          {word}{i < words.length - 1 ? "\u00A0" : ""}
+        </span>
+      ))}
+    </span>
+  );
+}
+
 /* Count-up when scrolled into view. Preserves suffix like "+", "/7", "H+". */
 function CountUp({ target, className = "" }: { target: string; className?: string }) {
   const ref = useRef<HTMLDivElement | null>(null);
@@ -523,10 +561,10 @@ function Hero() {
       </div>
 
       <div className="relative mx-auto max-w-6xl px-6 pt-20 pb-16 text-center">
-        {/* Hero headline with character splitting and glow on emphasized word */}
+        {/* Hero headline with word-split scale animation */}
         <h1 className="font-black tracking-tight text-balance text-6xl sm:text-7xl md:text-8xl lg:text-9xl leading-[0.9]">
-          <Reveal splitChars className="inline">AI marketers</Reveal>{" "}
-          <Reveal splitChars delay={200} className="inline text-glow">that ship.</Reveal>
+          <AnimatedHeadline text="AI marketers" isHero />{" "}
+          <AnimatedHeadline text="that ship." isHero delay={80} glow />
         </h1>
 
         <div className="mt-16 mx-auto max-w-2xl animate-reveal" style={{ animationDelay: "150ms" }}>
@@ -620,7 +658,7 @@ function AgentsMarquee() {
           <p className="text-xs sm:text-sm font-bold tracking-[0.28em] text-brand-soft">WHY ENRICH</p>
           {/* Section title with character splitting and underline */}
           <h2 className="section-title mt-4 text-4xl sm:text-5xl md:text-6xl font-black tracking-tight leading-[1.02] text-balance">
-            <Reveal splitChars className="inline">A complete marketing operating system</Reveal>
+            <Reveal className="inline">A complete marketing operating system</Reveal>
           </h2>
           <p className="mt-5 text-base md:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
             Everything your team needs to plan, execute, and analyze campaigns — powered by AI specialists that actually do the work.
@@ -681,8 +719,15 @@ function FeatureCard({ f, i }: { f: (typeof features)[number]; i: number }) {
 function Features() {
   return (
     <section className="py-24 bg-background">
-      <div className="mx-auto max-w-7xl px-6 grid md:grid-cols-2 gap-6">
-        {features.map((f, i) => <FeatureCard key={f.title} f={f} i={i} />)}
+      <div className="mx-auto max-w-7xl px-6 grid md:grid-cols-2 lg:grid-cols-12 gap-6">
+        {features.map((f, i) => (
+          <div 
+            key={f.title} 
+            className={i % 2 === 0 ? "lg:col-span-7" : "lg:col-span-5"}
+          >
+            <FeatureCard f={f} i={i} />
+          </div>
+        ))}
       </div>
     </section>
   );
@@ -695,7 +740,7 @@ function Stats() {
     { value: "10H+", label: "On average, marketing teams save over 10 hours every week." },
   ];
   return (
-    <section className="relative overflow-hidden py-24 bg-gradient-hero">
+    <section className="relative overflow-hidden py-24 bg-gradient-stats divider-top-angled" style={{ boxShadow: 'var(--border-glow-stats)' }}>
       <MeshBackdrop intensity={0.7} />
       <div className="relative mx-auto max-w-6xl px-6">
         <Reveal>
@@ -776,7 +821,7 @@ function HowTo() {
             <p className="text-sm font-bold tracking-[0.28em] text-brand-soft">HOW IT WORKS</p>
             {/* Section title with character splitting */}
             <h2 className="section-title mt-5 text-5xl sm:text-6xl md:text-7xl font-black tracking-tight leading-[0.95] text-balance">
-              <Reveal splitChars className="inline">Your autonomous marketing workflow</Reveal>
+              <Reveal className="inline">Your autonomous marketing workflow</Reveal>
             </h2>
             <p className="mt-6 text-lg md:text-xl text-muted-foreground leading-relaxed">
               Enrich specialists work together in real time — research feeds content, content fuels campaigns, and insights inform the next brief.
@@ -785,6 +830,10 @@ function HowTo() {
         </Reveal>
 
         <div className="mt-16 md:mt-24 grid md:grid-cols-2 gap-12 md:gap-20 items-start">
+          {/* Animated connector path between steps */}
+          <div className="absolute left-[calc(50%-200px)] top-[220px] w-[400px] h-[500px] hidden md:block">
+            <StepConnector steps={steps} activeStep={active} />
+          </div>
           <div className="space-y-16 md:space-y-[55vh] md:pt-[22vh] md:pb-[22vh]">
             {steps.map((s, i) => {
               const isActive = i === active;
@@ -904,11 +953,18 @@ function MeetTeam() {
           <p className="text-sm font-bold tracking-[0.28em] text-brand-soft">MEET YOUR TEAM</p>
           {/* Section title with character splitting */}
           <h2 className="section-title mt-5 text-5xl sm:text-6xl md:text-7xl font-black tracking-tight leading-[0.95] text-balance max-w-3xl">
-            <Reveal splitChars className="inline">Four specialists. One relentless team.</Reveal>
+            <Reveal className="inline">Four specialists. One relentless team.</Reveal>
           </h2>
         </Reveal>
-        <div className="mt-16 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {agents.map((a, i) => <AgentCard key={a.name} a={a} i={i} />)}
+        <div className="mt-16 grid sm:grid-cols-2 lg:grid-cols-12 gap-6">
+          {agents.map((a, i) => (
+            <div 
+              key={a.name} 
+              className={i % 2 === 0 ? "lg:col-span-7" : "lg:col-span-5"}
+            >
+              <AgentCard a={a} i={i} />
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -922,7 +978,7 @@ function Testimonials() {
         <Reveal>
           {/* Section title with character splitting */}
           <h2 className="section-title text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-balance max-w-3xl">
-            <Reveal splitChars className="inline">Loved by marketing teams that mean growth.</Reveal>
+            <Reveal className="inline">Loved by marketing teams that mean growth.</Reveal>
           </h2>
         </Reveal>
         <div className="mt-16 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -975,20 +1031,20 @@ function Integrations() {
   }, []);
 
   const chips = [
-    { label: "Slack", bg: "#fff", fg: "#611f69", letter: "#", x: "10%", y: "62%", size: 64, depth: 40, delay: 0 },
-    { label: "Notion", bg: "#fff", fg: "#111", letter: "N", x: "22%", y: "34%", size: 56, depth: 60, delay: 0.6 },
-    { label: "HubSpot", bg: "#fff", fg: "#ff7a59", letter: "H", x: "78%", y: "38%", size: 60, depth: -50, delay: 1.1 },
-    { label: "Figma", bg: "#fff", fg: "#a259ff", letter: "F", x: "90%", y: "68%", size: 68, depth: -70, delay: 0.3 },
-    { label: "Linear", bg: "#fff", fg: "#5e6ad2", letter: "L", x: "6%", y: "22%", size: 48, depth: 30, delay: 0.9 },
-    { label: "Zapier", bg: "#fff", fg: "#ff4a00", letter: "Z", x: "92%", y: "18%", size: 52, depth: -30, delay: 1.4 },
-    { label: "Salesforce", bg: "#fff", fg: "#00a1e0", letter: "S", x: "72%", y: "82%", size: 56, depth: -20, delay: 1.8 },
-    { label: "Google Ads", bg: "#fff", fg: "#4285f4", letter: "G", x: "16%", y: "84%", size: 52, depth: 20, delay: 2.2 },
+    { label: "Intercom", slug: "intercom", x: "10%", y: "62%", size: 64, depth: 40, delay: 0 },
+    { label: "Notion", slug: "notion", x: "22%", y: "34%", size: 56, depth: 60, delay: 0.6 },
+    { label: "HubSpot", slug: "hubspot", x: "78%", y: "38%", size: 60, depth: -50, delay: 1.1 },
+    { label: "Figma", slug: "figma", x: "90%", y: "68%", size: 68, depth: -70, delay: 0.3 },
+    { label: "Linear", slug: "linear", x: "6%", y: "22%", size: 48, depth: 30, delay: 0.9 },
+    { label: "Zapier", slug: "zapier", x: "92%", y: "18%", size: 52, depth: -30, delay: 1.4 },
+    { label: "Pipedrive", slug: "pipedrive", x: "72%", y: "82%", size: 56, depth: -20, delay: 1.8 },
+    { label: "Google Ads", slug: "googleads", x: "16%", y: "84%", size: 52, depth: 20, delay: 2.2 },
   ];
 
   return (
     <section
       ref={wrapRef}
-      className="relative overflow-hidden py-28 md:py-36"
+      className="relative overflow-hidden py-28 md:py-36 divider-top-angled divider-bottom-angled"
       style={{
         background:
           "radial-gradient(120% 80% at 50% 40%, oklch(0.9 0.06 300) 0%, oklch(0.94 0.03 300) 55%, oklch(0.97 0.01 285) 100%)",
@@ -1025,17 +1081,13 @@ function Integrations() {
             aria-label={c.label}
           >
             <div
-              className="grid place-items-center rounded-full shadow-[0_20px_40px_-15px_rgba(50,20,80,0.35)] ring-1 ring-black/5"
+              className="grid place-items-center rounded-full shadow-[0_20px_40px_-15px_rgba(50,20,80,0.35)] ring-1 ring-black/5 bg-white"
               style={{
                 width: c.size,
                 height: c.size,
-                background: c.bg,
-                color: c.fg,
-                fontWeight: 900,
-                fontSize: c.size * 0.42,
               }}
             >
-              {c.letter}
+              <IntegrationIcon slug={c.slug} size={c.size * 0.5} />
             </div>
           </div>
         ))}
@@ -1062,7 +1114,7 @@ function Integrations() {
 
 function CTA() {
   return (
-    <section className="relative overflow-hidden py-32 bg-gradient-hero">
+    <section className="relative overflow-hidden py-32 bg-gradient-cta divider-top-angled">
       <MeshBackdrop intensity={0.6} />
       <div className="relative mx-auto max-w-4xl px-6 text-center">
         <Reveal>
@@ -1073,11 +1125,11 @@ function CTA() {
             Join thousands of teams growing faster with autonomous AI marketers.
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-3">
-            {/* STEP 4: Neon border on primary CTA */}
-            <a href="#" className="inline-flex items-center gap-2 rounded-full bg-lime px-6 py-3 font-semibold text-[oklch(0.2_0.05_285)] btn-lift neon-border">
+            {/* Primary CTA - lime accent for action */}
+            <a href="#" className="inline-flex items-center gap-2 rounded-full bg-accent-warm px-6 py-3 font-semibold text-[oklch(0.2_0.05_285)] btn-lift neon-border">
               Get Started — It's Free <ArrowRight className="w-4 h-4" />
             </a>
-            {/* STEP 8: Teal accent on secondary/outline button */}
+            {/* Secondary button - teal for less emphasis */}
             <a href="#" className="inline-flex items-center gap-2 rounded-full bg-white/10 hover:bg-white/15 px-6 py-3 font-semibold transition btn-lift neon-border-teal">
               Book a Demo
             </a>
@@ -1134,20 +1186,23 @@ function Footer() {
 
 function Index() {
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <AnnouncementBar />
-      <Nav />
-      <Hero />
-      <AgentsMarquee />
-      <Features />
-      <Stats />
-      <HowTo />
-      <MeetTeam />
-      <Testimonials />
-      <Integrations />
-      <CTA />
-      <Footer />
-    </main>
+    <>
+      <CustomCursor />
+      <main className="min-h-screen bg-background text-foreground">
+        <AnnouncementBar />
+        <Nav />
+        <Hero />
+        <AgentsMarquee />
+        <Features />
+        <Stats />
+        <HowTo />
+        <MeetTeam />
+        <Testimonials />
+        <Integrations />
+        <CTA />
+        <Footer />
+      </main>
+    </>
   );
 }
 export const _iconRef = Play;
