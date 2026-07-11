@@ -389,11 +389,11 @@ const agents = [
 ];
 
 const testimonials = [
-  { quote: "Enrich has doubled our content output without expanding the team. It's like hiring a full marketing pod overnight.", name: "Jane Doe", role: "Marketing Director", company: "Acme Corp" },
-  { quote: "Our campaigns run themselves. Enrich feels like our entire marketing department — at a fraction of the cost.", name: "John Smith", role: "CEO", company: "Shop&Save" },
-  { quote: "Helena writes better first drafts than most agencies we've hired. We just review, tweak, and ship.", name: "Priya Natarajan", role: "Head of Growth", company: "Northwind" },
-  { quote: "The moment we plugged in our brand voice, every output started sounding like us. That was the unlock.", name: "Marco Álvarez", role: "VP Marketing", company: "Lumen" },
-  { quote: "This is what an AI marketing team should feel like.", name: "Sara Chen", role: "Founder", company: "BrightPath" },
+  { quote: "Enrich has doubled our content output without expanding the team. It's like hiring a full marketing pod overnight.", name: "Jane Doe", role: "Marketing Director" },
+  { quote: "Our campaigns run themselves. Enrich feels like our entire marketing department — at a fraction of the cost.", name: "John Smith", role: "CEO" },
+  { quote: "Helena writes better first drafts than most agencies we've hired. We just review, tweak, and ship.", name: "Priya Natarajan", role: "Head of Growth" },
+  { quote: "The moment we plugged in our brand voice, every output started sounding like us. That was the unlock.", name: "Marco Álvarez", role: "VP Marketing" },
+  { quote: "This is what an AI marketing team should feel like.", name: "Sara Chen", role: "Founder" },
 ];
 
 /* ---------- Sections ---------- */
@@ -534,6 +534,7 @@ function MobileHeroCanvas() {
 function Hero() {
   const [isMobile, setIsMobile] = useState<boolean | null>(null); // null = not mounted yet
   const [mounted, setMounted] = useState(false);
+  const reduced = useReducedMotion();
   const gridRef = useRef<HTMLDivElement>(null);
   const gradientRef = useRef<HTMLDivElement>(null);
   const particlesRef = useRef<HTMLDivElement>(null);
@@ -546,6 +547,11 @@ function Hero() {
     mq.addEventListener("change", cb);
     return () => mq.removeEventListener("change", cb);
   }, []);
+
+  // Show video on desktop unless reduced motion is preferred
+  const showVideo = !isMobile && mounted && !reduced;
+  // Show atmospheric background only when NOT showing video (mobile or reduced motion)
+  const showAtmospheric = !showVideo;
 
   // Integration icons for trust bar
   const integrationIcons = [
@@ -560,11 +566,11 @@ function Hero() {
 
   return (
     <section className="relative overflow-hidden bg-gradient-hero">
-      {/* STEP 3: Layered atmospheric background */}
-      <AtmosphericBackground gridRef={gridRef} gradientRef={gradientRef} particlesRef={particlesRef} />
+      {/* STEP 3: Layered atmospheric background — only render when video is NOT showing */}
+      {showAtmospheric && <AtmosphericBackground gridRef={gridRef} gradientRef={gradientRef} particlesRef={particlesRef} />}
       
       {/* Full-bleed video background on desktop */}
-      {!isMobile && mounted && (
+      {showVideo && (
         <>
           <div className="absolute inset-0 z-0">
             <video
@@ -1115,7 +1121,7 @@ function Testimonials() {
                 </blockquote>
                 <figcaption className="mt-8 not-italic">
                   <div className="font-semibold">{t.name}</div>
-                  <div className="text-sm text-muted-foreground">{t.role}, {t.company}</div>
+                  <div className="text-sm text-muted-foreground">{t.role}</div>
                 </figcaption>
               </figure>
             </Reveal>

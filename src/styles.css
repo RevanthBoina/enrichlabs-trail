@@ -275,6 +275,9 @@ button, .btn {
   .custom-cursor { display: none; }
 }
 
+/* Hide native cursor when custom cursor is active */
+body:has(.custom-cursor) * { cursor: none !important; }
+
 /* Section dividers - angled clip-path transitions */
 .divider-top-angled {
   clip-path: polygon(0 0, 100% 3vw, 100% 100%, 0 100%);
