@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "date > .build-timestamp && npm run build",
   "outputDirectory": ".vercel/output/static",
   "installCommand": "npm install",
   "framework": null,
