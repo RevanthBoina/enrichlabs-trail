@@ -765,61 +765,56 @@ function Stats() {
   );
 }
 
-/* HOW IT WORKS — sticky scroll motion */
+/* HOW IT WORKS — enhanced scroll-driven stepper with modern motion */
 function HowTo() {
   const itemRefs = useRef<Array<HTMLDivElement | null>>([]);
   const [active, setActive] = useState(0);
+  const reduced = useReducedMotion();
   const gridRef = useRef<HTMLDivElement>(null);
   const gradientRef = useRef<HTMLDivElement>(null);
   const particlesRef = useRef<HTMLDivElement>(null);
 
+  // Scroll-driven activation using IntersectionObserver
   useEffect(() => {
+    if (reduced) {
+      setActive(0);
+      return;
+    }
+
     const els = itemRefs.current.filter(Boolean) as HTMLDivElement[];
     if (!els.length) return;
 
-    const pick = () => {
-      const mid = window.innerHeight / 2;
-      let best = 0;
-      let bestDist = Infinity;
-      els.forEach((el, i) => {
-        const r = el.getBoundingClientRect();
-        const c = r.top + r.height / 2;
-        const d = Math.abs(c - mid);
-        if (d < bestDist) {
-          bestDist = d;
-          best = i;
-        }
-      });
-      setActive(best);
+    const observerOptions = {
+      root: null,
+      rootMargin: "-40% 0px -40% 0px",
+      threshold: 0,
     };
 
-    pick();
-    let raf = 0;
-    const onScroll = () => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        raf = 0;
-        pick();
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const index = itemRefs.current.indexOf(entry.target as HTMLDivElement);
+          if (index !== -1) {
+            setActive(index);
+          }
+        }
       });
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", pick);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", pick);
-    };
-  }, []);
+    }, observerOptions);
+
+    els.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, [reduced]);
 
   return (
     <section className="relative py-28 md:py-32 bg-background overflow-hidden">
-      {/* STEP 3: Layered atmospheric background for How It Works section */}
+      {/* Layered atmospheric background */}
       <AtmosphericBackground gridRef={gridRef} gradientRef={gradientRef} particlesRef={particlesRef} />
       
       <div className="relative mx-auto max-w-7xl px-6">
         <Reveal>
           <div className="max-w-3xl">
             <p className="text-sm font-bold tracking-[0.28em] text-brand-soft">HOW IT WORKS</p>
-            {/* Section title with character splitting */}
             <h2 className="section-title mt-5 text-5xl sm:text-6xl md:text-7xl font-black tracking-tight leading-[0.95] text-balance">
               <Reveal className="inline">Your autonomous marketing workflow</Reveal>
             </h2>
@@ -829,21 +824,34 @@ function HowTo() {
           </div>
         </Reveal>
 
-        <div className="mt-16 md:mt-24 grid md:grid-cols-2 gap-12 md:gap-20 items-start">
-          {/* Animated connector path between steps */}
-          <div className="absolute left-[calc(50%-200px)] top-[220px] w-[400px] h-[500px] hidden md:block">
-            <StepConnector steps={steps} activeStep={active} />
-          </div>
-          <div className="space-y-16 md:space-y-[55vh] md:pt-[22vh] md:pb-[22vh]">
+        {/* Split layout: left stepper + right sticky preview */}
+        <div className="mt-16 md:mt-24 grid md:grid-cols-2 gap-12 lg:gap-16 items-start">
+          {/* Left Column: Interactive Stepper */}
+          <div className="space-y-16 md:space-y-[50vh] md:pt-[25vh] md:pb-[25vh]">
             {steps.map((s, i) => {
               const isActive = i === active;
               return (
                 <div
                   key={s.n}
                   ref={(el) => { itemRefs.current[i] = el; }}
-                  className="transition-all duration-700 ease-out"
-                  style={{ opacity: isActive ? 1 : 0.4 }}
+                  className="group relative transition-all duration-500 ease-out"
+                  style={{ 
+                    opacity: isActive ? 1 : 0.35,
+                    transform: isActive ? "translateX(0)" : "translateX(-8px)"
+                  }}
                 >
+                  {/* Active indicator bar */}
+                  <div 
+                    className="absolute -left-4 top-0 bottom-0 w-1 rounded-full transition-all duration-500 ease-out"
+                    style={{
+                      background: isActive 
+                        ? "linear-gradient(180deg, var(--brand) 0%, var(--brand-soft) 100%)" 
+                        : "transparent",
+                      boxShadow: isActive ? "0 0 20px oklch(0.65 0.22 295 / 0.6)" : "none",
+                    }}
+                  />
+                  
+                  {/* Mobile preview */}
                   <div className="md:hidden mb-6 relative aspect-[4/3] rounded-2xl overflow-hidden border border-border bg-gradient-to-br from-brand/40 via-brand-deep to-background shadow-glow">
                     <img src={s.img} alt={`${s.title} — ${s.tagline}`} loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
@@ -851,29 +859,63 @@ function HowTo() {
                       Step {s.n} · {s.title}
                     </div>
                   </div>
+
                   <div className="flex items-start gap-4 md:gap-5">
-                    <span
-                      className="mt-3 md:mt-4 inline-block rounded-full transition-all duration-700 shrink-0"
-                      style={{
-                        width: isActive ? 12 : 8,
-                        height: isActive ? 12 : 8,
-                        background: isActive ? "var(--brand)" : "var(--muted-foreground)",
-                        boxShadow: isActive ? "0 0 0 5px oklch(0.65 0.22 295 / 0.18)" : "none",
-                      }}
-                    />
+                    {/* Step indicator dot with glow */}
+                    <div className="relative mt-3 md:mt-4 shrink-0">
+                      <span
+                        className="inline-block rounded-full transition-all duration-500"
+                        style={{
+                          width: isActive ? 14 : 10,
+                          height: isActive ? 14 : 10,
+                          background: isActive ? "var(--brand)" : "var(--muted-foreground)",
+                          boxShadow: isActive 
+                            ? "0 0 0 4px oklch(0.65 0.22 295 / 0.2), 0 0 24px oklch(0.65 0.22 295 / 0.5)" 
+                            : "none",
+                        }}
+                      />
+                      {/* Pulse ring for active state */}
+                      {isActive && (
+                        <span 
+                          className="absolute inset-0 rounded-full animate-ping opacity-30"
+                          style={{ 
+                            background: "var(--brand)",
+                            animationDuration: "2s"
+                          }}
+                        />
+                      )}
+                    </div>
+                    
                     <div className="min-w-0">
                       <span className="text-xs text-muted-foreground font-mono tracking-widest">({s.n})</span>
                       <h3
-                        className="mt-2 font-black tracking-tight leading-[0.95] transition-colors duration-700"
+                        className="mt-2 font-black tracking-tight leading-[0.95] transition-all duration-500"
                         style={{
                           fontSize: "clamp(2rem, 5vw, 3.5rem)",
                           color: isActive ? "var(--brand-soft)" : "var(--foreground)",
+                          textShadow: isActive ? "0 0 30px oklch(0.65 0.22 295 / 0.4)" : "none",
                         }}
                       >
                         {s.title}
                       </h3>
-                      <p className="mt-3 text-brand-soft/90 font-semibold text-base md:text-lg">{s.tagline}</p>
-                      <p className="mt-2 text-muted-foreground leading-relaxed max-w-md text-[0.95rem] md:text-base">{s.body}</p>
+                      <p 
+                        className="mt-3 font-semibold text-base md:text-lg transition-all duration-500"
+                        style={{ 
+                          color: isActive ? "var(--brand-soft)" : "var(--muted-foreground)",
+                          opacity: isActive ? 1 : 0.7
+                        }}
+                      >
+                        {s.tagline}
+                      </p>
+                      <p 
+                        className="mt-2 leading-relaxed max-w-md text-[0.95rem] md:text-base transition-all duration-500"
+                        style={{ 
+                          color: isActive ? "var(--muted-foreground)" : "var(--muted-foreground)",
+                          opacity: isActive ? 1 : 0.5
+                        }}
+                      >
+                        {s.body}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -881,38 +923,99 @@ function HowTo() {
             })}
           </div>
 
+          {/* Right Column: Sticky Dynamic Visual Preview */}
           <div className="hidden md:block">
             <div className="sticky top-24">
-              <div className="relative aspect-[4/5] max-h-[75vh] rounded-3xl bg-gradient-to-br from-brand/50 via-brand-deep to-background border border-border shadow-glow overflow-hidden">
-                {steps.map((s, i) => (
-                  <img
-                    key={s.n}
-                    src={s.img}
-                    alt={`${s.title} — ${s.tagline}`}
-                    loading="lazy"
-                    className="absolute inset-0 w-full h-full object-cover transition-all duration-[900ms] ease-out"
+              {/* Modern card with glass effect */}
+              <div className="relative rounded-3xl overflow-hidden">
+                {/* Outer glow ring */}
+                <div 
+                  className="absolute -inset-1 rounded-[1.4rem] transition-opacity duration-700"
+                  style={{
+                    background: "linear-gradient(135deg, oklch(0.72 0.2 300 / 0.4), oklch(0.65 0.22 295 / 0.2), oklch(0.75 0.14 190 / 0.3))",
+                    opacity: 0.6,
+                    filter: "blur(1px)",
+                  }}
+                />
+                
+                {/* Main card */}
+                <div className="relative aspect-[4/5] max-h-[75vh] rounded-[1.2rem] bg-gradient-to-br from-brand/30 via-brand-deep/80 to-background border border-border/50 overflow-hidden shadow-[0_25px_80px_-20px_rgba(0,0,0,0.6)]">
+                  {/* Animated background gradient */}
+                  <div 
+                    className="absolute inset-0 transition-all duration-1000 ease-out"
                     style={{
-                      opacity: i === active ? 1 : 0,
-                      transform: i === active ? "scale(1)" : "scale(1.06)",
+                      background: active === 0 
+                        ? "radial-gradient(ellipse at 30% 40%, oklch(0.65 0.22 295 / 0.3) 0%, transparent 60%)"
+                        : active === 1
+                        ? "radial-gradient(ellipse at 70% 30%, oklch(0.72 0.2 300 / 0.3) 0%, transparent 60%)"
+                        : "radial-gradient(ellipse at 50% 60%, oklch(0.75 0.14 190 / 0.3) 0%, transparent 60%)",
                     }}
                   />
-                ))}
-                <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent pointer-events-none" />
-                <div className="absolute top-5 left-5 flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md px-3 py-1.5 text-xs font-semibold border border-white/20">
-                  <span className="w-1.5 h-1.5 rounded-full bg-lime animate-pulse" />
-                  Step {steps[active].n} · {steps[active].title}
-                </div>
-                <div className="absolute bottom-5 left-5 right-5 flex items-center gap-1.5">
-                  {steps.map((_, i) => (
-                    <span
-                      key={i}
-                      className="h-1 rounded-full transition-all duration-700"
+                  
+                  {/* Image transitions with cross-fade and slide */}
+                  {steps.map((s, i) => (
+                    <div
+                      key={s.n}
+                      className="absolute inset-0 transition-all duration-700 ease-out"
                       style={{
-                        flex: i === active ? 3 : 1,
-                        background: i === active ? "var(--brand-soft)" : "oklch(1 0 0 / 0.2)",
+                        opacity: i === active ? 1 : 0,
+                        transform: i === active 
+                          ? "translateY(0) scale(1)" 
+                          : i > active 
+                            ? "translateY(20px) scale(1.02)" 
+                            : "translateY(-20px) scale(1.02)",
+                        pointerEvents: i === active ? "auto" : "none",
                       }}
-                    />
+                    >
+                      <img 
+                        src={s.img} 
+                        alt={`${s.title} — ${s.tagline}`} 
+                        loading="lazy" 
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                    </div>
                   ))}
+                  
+                  {/* Overlay gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent pointer-events-none" />
+                  
+                  {/* Top indicator */}
+                  <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2 rounded-full bg-black/30 backdrop-blur-md px-3 py-1.5 text-xs font-semibold border border-white/10">
+                      <span className="w-1.5 h-1.5 rounded-full bg-lime animate-pulse" />
+                      Step {steps[active].n}
+                    </div>
+                    <div className="text-xs font-semibold text-white/80 backdrop-blur-md px-3 py-1.5 rounded-full bg-black/20 border border-white/10">
+                      {steps[active].title}
+                    </div>
+                  </div>
+                  
+                  {/* Bottom content */}
+                  <div className="absolute bottom-0 left-0 right-0 p-6">
+                    <div className="backdrop-blur-md bg-black/30 rounded-2xl p-4 border border-white/10">
+                      <h4 className="font-bold text-lg text-white">{steps[active].title}</h4>
+                      <p className="text-sm text-white/70 mt-1">{steps[active].tagline}</p>
+                    </div>
+                  </div>
+                  
+                  {/* Progress dots */}
+                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2">
+                    {steps.map((_, i) => (
+                      <span
+                        key={i}
+                        className="h-1.5 rounded-full transition-all duration-500 ease-out"
+                        style={{
+                          width: i === active ? 32 : 8,
+                          background: i === active 
+                            ? "linear-gradient(90deg, var(--brand), var(--brand-soft))" 
+                            : "rgba(255,255,255,0.3)",
+                          boxShadow: i === active 
+                            ? "0 0 12px oklch(0.65 0.22 295 / 0.6)" 
+                            : "none",
+                        }}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
