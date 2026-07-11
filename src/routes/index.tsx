@@ -10,6 +10,7 @@ import { IntegrationIcon, integrationColors } from "@/components/IntegrationIcon
 import { CustomCursor } from "@/components/CustomCursor";
 import { LottieAnimation } from "@/components/LottieAnimation";
 import { IntegrationEcosystem } from "@/components/IntegrationEcosystem";
+import { IntegrationOrbit } from "@/components/IntegrationOrbit";
 import { HeroWorkspace } from "@/components/HeroWorkspace";
 import { SimulatedPromptBar } from "@/components/SimulatedPromptBar";
 
@@ -1155,6 +1156,36 @@ function Testimonials() {
 
 function Integrations() {
   const wrapRef = useRef<HTMLDivElement | null>(null);
+  const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
+  const [isVisible, setIsVisible] = useState(false);
+
+  // Intersection observer for pausing animations
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { threshold: 0.3 }
+    );
+    
+    if (wrapRef.current) {
+      observer.observe(wrapRef.current);
+    }
+    
+    return () => observer.disconnect();
+  }, []);
+
+  // Subtle parallax on mouse move
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!wrapRef.current) return;
+    const rect = wrapRef.current.getBoundingClientRect();
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const mouseX = e.clientX - rect.left - centerX;
+    const mouseY = e.clientY - rect.top - centerY;
+    setMouseOffset({
+      x: (mouseX / centerX) * 10,
+      y: (mouseY / centerY) * 10,
+    });
+  }, []);
 
   return (
     <section
@@ -1162,8 +1193,9 @@ function Integrations() {
       className="relative overflow-hidden py-28 md:py-36 divider-top-angled divider-bottom-angled"
       style={{
         background:
-          "radial-gradient(120% 80% at 50% 40%, oklch(0.15 0.03 285) 0%, oklch(0.18 0.03 285) 50%, oklch(0.2 0.03 285) 100%)",
+          "radial-gradient(120% 80% at 50% 40%, oklch(0.12_0.02_285) 0%, oklch(0.15_0.02_285) 50%, oklch(0.18_0.02_285) 100%)",
       }}
+      onMouseMove={handleMouseMove}
     >
       {/* Premium integration ecosystem visualization */}
       <div className="relative mx-auto max-w-4xl px-6 text-center">
@@ -1181,9 +1213,9 @@ function Integrations() {
         </Reveal>
       </div>
 
-      {/* Premium Ecosystem Visualization */}
-      <div className="relative mx-auto max-w-6xl mt-16 md:mt-20 h-[500px] md:h-[600px] px-6">
-        <IntegrationEcosystem />
+      {/* Premium Orbital Integration Visualization */}
+      <div className="relative mx-auto max-w-6xl mt-16 md:mt-20 h-[500px] md:h-[650px] px-6">
+        {isVisible && <IntegrationOrbit mouseOffset={mouseOffset} />}
       </div>
 
       <div className="relative text-center mt-8">
