@@ -169,7 +169,7 @@ function AtmosphericBackground({
       move: { 
         enable: true, 
         speed: 0.3, 
-        direction: "none", 
+        direction: "none" as const, 
         random: true 
       },
       links: { 
@@ -259,7 +259,6 @@ function AtmosphericBackground({
         <div ref={particlesRef} className="absolute inset-0 parallax-particles pointer-events-none">
           <Particles
             id={particlesId.current}
-            init={particlesInit}
             options={particlesOptions}
             className="w-full h-full"
           />
@@ -885,9 +884,8 @@ function HowTo() {
                   />
                   
                   {/* Mobile preview */}
-                  <div className="md:hidden mb-6 relative aspect-[4/3] rounded-2xl overflow-hidden border border-border bg-gradient-to-br from-brand/40 via-brand-deep to-background shadow-glow">
-                    <img src={s.img} alt={`${s.title} — ${s.tagline}`} loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
+                  <div className="md:hidden mb-6 relative aspect-[4/3] rounded-2xl overflow-hidden border border-border bg-gradient-to-br from-brand/40 via-brand-deep to-background shadow-glow flex items-center justify-center">
+                    <LottieAnimation type={s.animation} size={160} />
                     <div className="absolute top-3 left-3 rounded-full bg-white/10 backdrop-blur-md px-3 py-1 text-xs font-semibold border border-white/20">
                       Step {s.n} · {s.title}
                     </div>
