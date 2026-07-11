@@ -22,8 +22,10 @@ import heroDash from "@/assets/hero-dashboard.jpg";
 import heroVideo from "@/assets/hero.mp4.asset.json";
 import enrichMark from "@/assets/enrich-mark.png.asset.json";
 
-// Register GSAP plugins
-gsap.registerPlugin(ScrollTrigger);
+// Register GSAP plugins (only on client side)
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 export const Route = createFileRoute("/")({
   component: Index,
