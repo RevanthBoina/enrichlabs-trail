@@ -44,17 +44,26 @@ function useReducedMotion() {
 }
 
 // Shared IntersectionObserver for all Reveal components - reduces overhead from multiple observers
-const sharedRevealObserver = new IntersectionObserver(
-  (entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add("is-visible");
-        sharedRevealObserver.unobserve(entry.target);
-      }
-    });
-  },
-  { threshold: 0.15, rootMargin: "0px 0px -40px 0px" }
-);
+// Lazy initialization to avoid SSR issues (IntersectionObserver is not available on server)
+let sharedRevealObserver: IntersectionObserver | null = null;
+
+function getSharedRevealObserver(): IntersectionObserver | null {
+  if (typeof window === "undefined") return null;
+  if (!sharedRevealObserver) {
+    sharedRevealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            sharedRevealObserver?.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.15, rootMargin: "0px 0px -40px 0px" }
+    );
+  }
+  return sharedRevealObserver;
+}
 
 /* Scroll-reveal with optional char splitting via IntersectionObserver at 15% visibility */
 function Reveal({
@@ -77,8 +86,10 @@ function Reveal({
     const el = ref.current;
     if (!el) return;
     // Use shared observer instead of creating a new one per component
-    sharedRevealObserver.observe(el);
-    return () => sharedRevealObserver.unobserve(el);
+    const observer = getSharedRevealObserver();
+    if (!observer) return;
+    observer.observe(el);
+    return () => observer.unobserve(el);
   }, []);
 
   const base = from === "left" ? "reveal-from-left" : "reveal-on-scroll";
